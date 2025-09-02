@@ -1,6 +1,37 @@
 # Smart Contract Document Template System
 
-## Project Status: Cycle 1 Complete ✅ | PR #13 Merged
+A powerful tool that lets users upload any document, manually insert variables like {{client_name}} where needed, then generate personalized versions by simply filling in the variable values.
+
+## Core Features
+
+### Document Management
+- **Upload Any Document**: Support for DOCX, PDF, and TXT formats
+- **Template Creation**: Convert any document into a reusable template
+- **Variable System**: Insert {{variable_name}} placeholders manually
+- **Visual Editor**: Rich text editing with live preview
+- **Format Preservation**: Maintain all original formatting and styling
+
+### Document Generation
+- **Single Document**: Generate personalized documents via form input
+- **Bulk Generation**: Process multiple documents from CSV data
+- **Multiple Formats**: Export as PDF or DOCX
+- **Preview Mode**: Review documents before generation
+- **Base64 Encoding**: Support for binary format handling
+
+### Template Library
+- **Template Management**: Organize, search, and filter templates
+- **Version Control**: Track template changes over time
+- **Sharing System**: Share templates with team members
+- **Usage Analytics**: Track template usage and generation stats
+
+### Backend Infrastructure
+- **Supabase Integration**: PostgreSQL database with Row Level Security
+- **Edge Functions**: Serverless document processing
+- **Authentication**: Secure user authentication via Supabase Auth
+- **Storage**: Cloud storage for templates and generated documents
+- **Real-time Updates**: WebSocket support for live collaboration (planned)
+
+## Project Status: Cycle 1 Complete ✅ | PR #16 Merged
 
 ### Completed Features (Cycle 1)
 - ✅ **Document Generation Core**
@@ -32,6 +63,25 @@
   - TypeScript throughout
   - Build successful with optimized chunking
   - No security vulnerabilities
+
+### In Progress (Cycle 2)
+- 🚧 **Rich Text Editor Enhancement**
+  - Lexical/Slate.js integration for advanced formatting
+  - Formatting toolbar (bold, italic, lists, tables)
+  - Undo/redo functionality
+  - Find and replace feature
+
+- 🚧 **Real-time Collaboration**
+  - WebSocket implementation via Supabase Realtime
+  - Presence indicators and cursor sharing
+  - Conflict resolution for simultaneous edits
+  - Commenting system on templates
+
+- 🚧 **Template Marketplace**
+  - Public template gallery
+  - Rating and review system
+  - Categories and tags
+  - Import/export functionality
 
 ### Core Workflow
 

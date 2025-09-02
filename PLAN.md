@@ -1,257 +1,406 @@
-# Smart Contract Document Template System - Architectural Plan
+# Smart Contract Document Template System - Cycle 2 Architectural Plan
 
 ## Executive Summary
-Web-based document personalization platform enabling users to transform any document into reusable templates with {{variable}} placeholders for automated, personalized document generation at scale.
+Following successful Cycle 1 completion with core features deployed, Cycle 2 focuses on enhancing user experience through rich text editing, real-time collaboration, and building a template marketplace while optimizing performance.
 
-## Core Requirements (From Vision & README)
+## Current System Status
 
-### Functional Requirements
-1. **Document Upload & Template Creation**
-   - Support DOCX, PDF, TXT formats
-   - Preserve all original formatting
-   - Extract and maintain document structure
-   - Store templates with metadata
+### ✅ Cycle 1 Achievements
+- 49 tests passing across 5 test suites
+- 7 database tables with RLS policies
+- 4 Edge Functions deployed
+- Bundle size optimized 80% (546KB → 106KB)
+- Core document generation working end-to-end
+- PR #16 merged to main branch
 
-2. **Variable System**
-   - Insert {{variable_name}} syntax manually
-   - Visual editor with real-time highlighting
-   - Variable extraction and validation
-   - Support text, date, number types
-   - Default values and validation rules
+### 🎯 Cycle 2 Objectives
+1. Enhance editor capabilities with rich text support
+2. Implement real-time collaborative editing
+3. Build template marketplace for sharing
+4. Optimize database performance
+5. Expand variable system capabilities
 
-3. **Document Generation**
-   - Single document via form input
-   - Bulk generation from CSV data
-   - Multiple output formats (PDF/DOCX)
-   - Base64 encoding for binary formats
-   - Preview before generation
+## Technical Architecture (Current State)
 
-4. **Template Management**
-   - Library with search/filter
-   - Version control system
-   - Template sharing capabilities
-   - Usage analytics
-
-### Non-Functional Requirements
-- Performance: <2s generation time
-- Security: RLS policies, encrypted storage
-- Scalability: 1000+ concurrent users
-- Accessibility: WCAG 2.1 AA
-- Mobile-responsive design
-
-## System Architecture
-
-### Technology Stack (Aligned with Current Implementation)
-- **Frontend**: React 18 + TypeScript + Vite
-- **UI Framework**: Tailwind CSS + Shadcn/ui components
-- **Backend**: Supabase (PostgreSQL, Auth, Storage, Edge Functions)
+### Technology Stack
+- **Frontend**: React 18.3 + TypeScript 5.6 + Vite 5.4
+- **UI Components**: Tailwind CSS 3.4 + Shadcn/ui
+- **Backend**: Supabase (PostgreSQL 15, Auth, Storage, Edge Functions)
 - **Document Processing**: 
-  - mammoth (DOCX extraction)
-  - pdf-lib (PDF generation)
-  - docxtemplater + pizzip (template processing)
-- **Testing**: Jest + React Testing Library
-- **Deployment**: Vercel/Netlify + Supabase Cloud
+  - mammoth 1.8 (DOCX extraction)
+  - pdf-lib 1.17 (PDF generation)
+  - docxtemplater 3.50 + pizzip 3.1 (template processing)
+- **Testing**: Jest 29.7 + React Testing Library 16.0
+- **State Management**: React Context + Supabase Realtime (planned)
 
-### Architecture Overview
-```
-┌──────────────────┐     ┌─────────────────┐     ┌──────────────┐
-│  React SPA       │────▶│ Supabase Edge   │────▶│  Storage     │
-│  (TypeScript)    │     │   Functions     │     │  Buckets     │
-└──────────────────┘     └─────────────────┘     └──────────────┘
-         │                        │                       │
-         │                 ┌──────▼──────┐              │
-         └────────────────▶│ PostgreSQL  │◀─────────────┘
-                          │   with RLS   │
-                          └──────────────┘
-```
-
-### Database Schema (Current Implementation)
+### Database Schema (Existing)
 ```sql
--- Core tables with RLS policies
-CREATE TABLE templates (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id),
-    name TEXT NOT NULL,
-    description TEXT,
-    content JSONB,
-    variables JSONB,
-    original_filename TEXT,
-    file_url TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- Current tables with RLS policies
+templates (id, user_id, name, content, variables, file_url)
+template_versions (id, template_id, version_number, content)
+generated_documents (id, template_id, user_id, variable_values)
+template_shares (id, template_id, shared_with_user_id, permissions)
+bulk_generations (id, template_id, user_id, csv_data, status)
+user_preferences (id, user_id, preferences)
+template_analytics (id, template_id, event_type, metadata)
+```
+
+## Cycle 2 Implementation Plan
+
+### Phase 1: Performance Optimizations (Week 1)
+**Priority**: Critical - Fix existing performance warnings
+
+#### Database Optimizations
+```sql
+-- Fix RLS performance issues
+ALTER POLICY template_shares_policy ON template_shares
+  USING ((select auth.uid()) IN (created_by, shared_with_user_id));
+
+ALTER POLICY bulk_generations_policy ON bulk_generations  
+  USING (user_id = (select auth.uid()));
+
+-- Add missing indexes
+CREATE INDEX idx_generated_documents_version ON generated_documents(template_version_id);
+CREATE INDEX idx_template_versions_creator ON template_versions(created_by);
+```
+
+#### Bundle Optimizations
+- Implement route-based code splitting
+- Lazy load heavy components (Editor, PDFViewer)
+- Tree-shake unused dependencies
+- Target: <100KB initial bundle
+
+### Phase 2: Rich Text Editor (Week 2-3)
+**Priority**: High - Core UX enhancement
+
+#### Lexical Editor Integration
+```typescript
+// New editor component structure
+interface RichEditorProps {
+  template: Template;
+  onVariableInsert: (variable: Variable) => void;
+  onContentChange: (content: EditorState) => void;
+  collaborators?: Collaborator[];
+}
+
+// Features to implement
+- Formatting toolbar (bold, italic, underline, lists)
+- Table support with cell merging
+- Image insertion and resize
+- Variable highlighting with custom nodes
+- Undo/redo with history tracking
+- Find and replace with regex support
+```
+
+#### Variable System Enhancement
+```typescript
+enum VariableType {
+  TEXT = 'text',
+  NUMBER = 'number',
+  DATE = 'date',
+  SELECT = 'select',
+  CALCULATED = 'calculated',
+  CONDITIONAL = 'conditional'
+}
+
+interface EnhancedVariable {
+  name: string;
+  type: VariableType;
+  validation?: ValidationRule;
+  options?: string[]; // for SELECT type
+  formula?: string;   // for CALCULATED type
+  condition?: string; // for CONDITIONAL blocks
+}
+```
+
+### Phase 3: Real-time Collaboration (Week 4-5)
+**Priority**: High - Differentiator feature
+
+#### Supabase Realtime Setup
+```typescript
+// Real-time presence and collaboration
+const channel = supabase.channel(`template:${templateId}`)
+  .on('presence', { event: 'sync' }, () => {
+    // Update active users list
+  })
+  .on('broadcast', { event: 'cursor' }, (payload) => {
+    // Update collaborator cursors
+  })
+  .on('broadcast', { event: 'selection' }, (payload) => {
+    // Show collaborator selections
+  })
+  .on('postgres_changes', {
+    event: 'UPDATE',
+    schema: 'public',
+    table: 'templates',
+    filter: `id=eq.${templateId}`
+  }, (payload) => {
+    // Handle content changes
+  })
+  .subscribe();
+```
+
+#### Conflict Resolution
+- Operational Transformation (OT) for text merging
+- Version vector for change tracking
+- Automatic merge with conflict markers
+- Manual resolution UI for complex conflicts
+
+### Phase 4: Template Marketplace (Week 6-7)
+**Priority**: Medium - Growth feature
+
+#### Database Schema Extension
+```sql
+CREATE TABLE template_marketplace (
+  id UUID PRIMARY KEY,
+  template_id UUID REFERENCES templates(id),
+  publisher_id UUID REFERENCES auth.users(id),
+  title TEXT NOT NULL,
+  description TEXT,
+  category TEXT,
+  tags TEXT[],
+  price DECIMAL(10,2) DEFAULT 0,
+  downloads INTEGER DEFAULT 0,
+  rating DECIMAL(3,2),
+  featured BOOLEAN DEFAULT false,
+  published_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE template_versions (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    template_id UUID REFERENCES templates(id) ON DELETE CASCADE,
-    version_number INTEGER,
-    content JSONB,
-    variables JSONB,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    created_by UUID REFERENCES auth.users(id)
-);
-
-CREATE TABLE generated_documents (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    template_id UUID REFERENCES templates(id),
-    user_id UUID REFERENCES auth.users(id),
-    variable_values JSONB,
-    output_format TEXT,
-    file_url TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE template_shares (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    template_id UUID REFERENCES templates(id),
-    shared_with_user_id UUID REFERENCES auth.users(id),
-    permissions TEXT[],
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE template_reviews (
+  id UUID PRIMARY KEY,
+  marketplace_id UUID REFERENCES template_marketplace(id),
+  user_id UUID REFERENCES auth.users(id),
+  rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+  comment TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
-## API Design (Supabase Edge Functions)
+#### Marketplace Features
+- Browse by category/tags
+- Search with filters
+- Preview templates before import
+- One-click import to library
+- Rating and review system
+- Featured templates section
+- Usage analytics for publishers
 
-### Deployed Functions (Current)
-1. `/upload-template` - Process and store document templates
-2. `/generate-document` - Generate single personalized document
-3. `/bulk-generate` - Process CSV for bulk generation
-4. `/process-variables` - Extract and validate variables
+### Phase 5: Advanced Features (Week 8)
+**Priority**: Low - Enhancement features
 
-### Database Operations
-- Direct Supabase client with RLS
-- Optimistic UI updates
-- Real-time subscriptions ready
+#### API Development
+```typescript
+// Public API for developers
+interface APIEndpoints {
+  '/api/templates': 'List user templates',
+  '/api/templates/:id': 'Get template details',
+  '/api/templates/:id/generate': 'Generate document',
+  '/api/templates/:id/bulk': 'Bulk generation',
+  '/api/marketplace': 'Browse marketplace'
+}
+```
 
-## Implementation Status
+#### Integration Features
+- Webhook support for generation events
+- Zapier/Make.com integration
+- Google Drive/Dropbox sync
+- Email delivery of generated documents
 
-### ✅ Completed (Cycle 1)
-- Core UI components (Dashboard, Editor, Generator)
-- Supabase integration (Auth, Database, Storage)
-- Document processing utilities
-- Variable substitution engine
-- Single & bulk generation
-- 49 tests passing
-- Build successful with no warnings
+## Testing Strategy
 
-### 🚧 Current Focus (Cycle 2)
-- Template versioning UI
+### Unit Testing
+- Achieve 80% code coverage
+- Fix 3 skipped tests from Cycle 1
+- Add tests for new components
+
+### Integration Testing
+- Template creation flow
+- Document generation pipeline
 - Real-time collaboration
-- Performance optimizations
-- Enhanced error handling
-- Template marketplace
+- Marketplace transactions
 
-### 📋 Future Enhancements
-- Team workspaces
-- API access for developers
-- Analytics dashboard
-- SSO integration
-- Custom branding
+### E2E Testing
+```typescript
+// Critical user journeys
+describe('E2E Tests', () => {
+  test('Complete template workflow', async () => {
+    // Upload → Edit → Generate → Download
+  });
+  
+  test('Collaborative editing', async () => {
+    // Multiple users editing simultaneously
+  });
+  
+  test('Marketplace purchase flow', async () => {
+    // Browse → Preview → Import → Use
+  });
+});
+```
 
-## Security Architecture
+## Performance Targets
 
-### Authentication & Authorization
-- Supabase Auth (email/password + OAuth)
-- Row Level Security on all tables
-- User-scoped data access
-- Sharing permissions system
+### Metrics
+| Metric | Current | Target | Priority |
+|--------|---------|--------|----------|
+| Initial Load | 2.1s | <1.5s | High |
+| Bundle Size | 106KB | <100KB | Medium |
+| Generation Time | 3.2s | <2s | High |
+| Concurrent Users | 100 | 1000+ | Medium |
+| Database Queries | 15ms avg | <10ms | High |
 
-### Data Protection
-- Encrypted storage at rest
-- HTTPS enforced
-- Input validation/sanitization
-- CSRF protection
-- Rate limiting
+### Optimization Strategies
+1. Implement React.memo for expensive components
+2. Use React Query for data caching
+3. Add Redis caching layer for templates
+4. Optimize database queries with proper indexing
+5. Implement virtual scrolling for large lists
 
-## Performance Strategy
+## Security Enhancements
 
-### Frontend Optimizations
-- Code splitting by route
-- Lazy loading components
-- Virtual scrolling for lists
-- React Query caching
-- Optimistic UI updates
+### New Security Measures
+- Rate limiting on API endpoints (100 req/min)
+- CAPTCHA for public template uploads
+- Content scanning for malicious templates
+- Audit logging for sensitive operations
+- Two-factor authentication option
 
-### Backend Optimizations
-- Database indexing
-- Edge Function caching
-- CDN for static assets
-- Connection pooling
-- Batch operations
+### Compliance
+- GDPR data handling procedures
+- CCPA compliance for California users
+- SOC 2 Type II preparation
+- Regular security audits
 
-## Risk Mitigation
+## Risk Assessment
 
 ### Technical Risks
-| Risk | Impact | Mitigation | Status |
-|------|--------|------------|--------|
-| Large file processing | High | Streaming, chunking | ✅ Implemented |
-| Complex formats | Medium | Progressive support | ✅ DOCX/PDF done |
-| Concurrent editing | High | Operational transforms | 🚧 Planning |
-| Scale issues | Medium | Rate limiting, queuing | 📋 Future |
+| Risk | Probability | Impact | Mitigation |
+|------|------------|--------|------------|
+| Real-time sync issues | Medium | High | Implement robust conflict resolution |
+| Editor performance | Low | Medium | Use virtualization and lazy loading |
+| Marketplace abuse | Medium | High | Content moderation and reporting |
+| Scale limitations | Low | High | Plan for horizontal scaling |
 
 ### Business Risks
-| Risk | Impact | Mitigation | Status |
-|------|--------|------------|--------|
-| Data privacy | High | Strict RLS policies | ✅ Implemented |
-| Service availability | High | Multi-region deploy | 📋 Future |
-| Cost overruns | Medium | Usage monitoring | 🚧 Planning |
+| Risk | Probability | Impact | Mitigation |
+|------|------------|--------|------------|
+| Low marketplace adoption | Medium | Medium | Launch with seed content |
+| Feature complexity | High | Medium | Progressive disclosure UX |
+| Support burden | Medium | Low | Comprehensive documentation |
 
 ## Success Metrics
 
 ### Technical KPIs
-- Page load <2s ✅
-- Document generation <5s ✅
-- 99.9% uptime target
-- <1% error rate ✅
+- Test coverage >80%
+- Performance score >90 (Lighthouse)
+- Error rate <0.5%
+- API response time <200ms p95
 
 ### Business KPIs
-- User activation >60%
-- Template reuse >3x
-- Monthly retention >80%
-- NPS score >50
+- Daily Active Users growth >10% MoM
+- Template reuse rate >5x
+- Marketplace conversion >2%
+- User satisfaction (NPS) >60
 
-## Development Workflow
+## Development Timeline
 
-### Git Strategy
-- Feature branches from main
-- Semantic commit messages
-- PR reviews required
-- Automated CI/CD
+### Week 1-2: Foundation
+- Database performance fixes
+- Bundle optimization
+- Testing improvements
 
-### Testing Strategy
-- Unit tests (currently 49 passing)
-- Integration tests
-- E2E for critical paths
-- Performance benchmarks
+### Week 3-4: Rich Editor
+- Lexical integration
+- Advanced variables
+- Format preservation
 
-### Quality Assurance
-- TypeScript throughout ✅
-- ESLint + Prettier ✅
-- Pre-commit hooks
-- Code review process
+### Week 5-6: Collaboration
+- Real-time sync
+- Presence indicators
+- Conflict resolution
 
-## Technical Debt & Optimizations
+### Week 7-8: Marketplace
+- Public gallery
+- Import/export
+- Reviews system
 
-### Current Issues
-- Bundle size: 546KB (needs optimization)
-- 3 skipped tests (mock limitations)
-- Unused database indexes
-- Code splitting opportunities
+## Resource Requirements
 
-### Planned Improvements
-1. Implement code splitting
-2. Optimize bundle with tree shaking
-3. Fix skipped test mocks
-4. Add missing indexes
-5. Implement caching strategy
+### Team Composition
+- 2 Frontend developers (React/TypeScript)
+- 1 Backend developer (Supabase/PostgreSQL)
+- 1 DevOps engineer (CI/CD, monitoring)
+- 1 UX designer (marketplace, editor)
+- 1 QA engineer (testing, automation)
 
-## Next Immediate Steps
+### Infrastructure
+- Supabase Pro plan ($25/month)
+- Vercel Pro hosting ($20/month)
+- Monitoring (Sentry) ($26/month)
+- CDN (Cloudflare) (Free tier)
 
-1. **Merge Cycle 1 PR** (#10) to main branch
-2. **Start Cycle 2**: Real-time collaboration
-3. **Optimize**: Bundle size reduction
-4. **Enhance**: Template versioning UI
-5. **Expand**: Test coverage for skipped tests
+## Migration Strategy
+
+### Database Migrations
+```sql
+-- Performance fixes (immediate)
+BEGIN;
+  -- Update RLS policies
+  -- Add missing indexes
+  -- Remove unused indexes
+COMMIT;
+
+-- Marketplace tables (week 6)
+BEGIN;
+  -- Create marketplace schema
+  -- Add review system
+  -- Set up RLS policies
+COMMIT;
+```
+
+### Code Migration
+- Gradual component replacement
+- Feature flags for new functionality
+- A/B testing for UX changes
+- Backward compatibility maintained
+
+## Documentation Plan
+
+### User Documentation
+- Interactive tutorials
+- Video walkthroughs
+- Template examples
+- Best practices guide
+
+### Developer Documentation
+- API reference
+- Integration guides
+- Contribution guidelines
+- Architecture diagrams
+
+## Monitoring & Analytics
+
+### Application Monitoring
+- Error tracking (Sentry)
+- Performance monitoring (Web Vitals)
+- User analytics (Mixpanel/Amplitude)
+- Infrastructure monitoring (Supabase dashboard)
+
+### Business Analytics
+- Template usage patterns
+- Generation success rates
+- User retention cohorts
+- Marketplace metrics
 
 ## Conclusion
-The Smart Contract Document Template System has a solid foundation with core features implemented and tested. The architecture is scalable, secure, and maintainable. Focus remains on user experience, reliability, and gradual feature enhancement based on user feedback.
+
+Cycle 2 builds upon the solid foundation of Cycle 1, focusing on user experience enhancements and growth features. The plan prioritizes performance fixes first, then progressively adds rich editing, collaboration, and marketplace features. With proper execution, this cycle will position the Smart Contract Document Template System as a comprehensive solution for document personalization at scale.
+
+## Next Steps
+
+1. **Immediate**: Fix RLS performance warnings
+2. **Week 1**: Begin rich editor integration
+3. **Week 2**: Start real-time collaboration setup
+4. **Week 4**: Launch marketplace beta
+5. **Week 8**: Full Cycle 2 feature release
+
+The system architecture is proven, the core works reliably, and the path forward is clear. Focus remains on incremental improvements while maintaining system stability and performance.
