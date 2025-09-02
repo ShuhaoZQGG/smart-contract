@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { Plus, FileText, Upload, LogOut, Menu } from 'lucide-react'
-import { TableSkeleton, DashboardStatsSkeleton } from '../components/SkeletonLoaders'
+import { TableSkeleton } from '../components/SkeletonLoaders'
 
 interface Template {
   id: string
