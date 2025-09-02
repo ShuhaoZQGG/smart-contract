@@ -164,12 +164,15 @@ const Dashboard: React.FC = () => {
                 </div>
               </Link>
               
-              <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer">
+              <Link
+                to="/bulk-generate"
+                className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition"
+              >
                 <div className="flex flex-col items-center">
                   <Upload className="h-12 w-12 text-accent mb-3" />
                   <span className="font-semibold">Bulk Generate</span>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
 
@@ -227,7 +230,7 @@ const Dashboard: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           <Link
-                            to={`/template/${template.id}/edit`}
+                            to={`/template/${template.id}/edit-enhanced`}
                             className="text-primary hover:text-blue-600 mr-4"
                           >
                             Edit

@@ -2,7 +2,7 @@ export const extractVariables = (content: string): string[] => {
   const regex = /\{\{(\w+)\}\}/g
   const matches = content.match(regex) || []
   const variables = matches.map(m => m.replace(/\{\{|\}\}/g, ''))
-  return [...new Set(variables)]
+  return Array.from(new Set(variables))
 }
 
 export const replaceVariables = (

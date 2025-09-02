@@ -4,7 +4,9 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import TemplateEditor from './pages/TemplateEditor'
+import TemplateEditorEnhanced from './components/TemplateEditorEnhanced'
 import GenerateDocument from './pages/GenerateDocument'
+import BulkGenerator from './components/BulkGenerator'
 import TemplateLibrary from './pages/TemplateLibrary'
 import Auth from './pages/Auth'
 
@@ -59,6 +61,22 @@ function App() {
               element={
                 <PrivateRoute>
                   <GenerateDocument />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/template/:templateId/edit-enhanced"
+              element={
+                <PrivateRoute>
+                  <TemplateEditorEnhanced />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/bulk-generate"
+              element={
+                <PrivateRoute>
+                  <BulkGenerator />
                 </PrivateRoute>
               }
             />
