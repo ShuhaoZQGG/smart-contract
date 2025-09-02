@@ -1,14 +1,16 @@
-# UI/UX Design Specifications
+# Smart Contract Generator - UI/UX Design Specifications
 
 ## Design System
 
 ### Brand Identity
-- **Primary Color**: #3B82F6 (Blue)
-- **Secondary Color**: #10B981 (Green) 
-- **Accent Color**: #8B5CF6 (Purple)
-- **Error**: #EF4444
-- **Warning**: #F59E0B
+- **Primary Color**: #3B82F6 (Blue-500)
+- **Secondary Color**: #10B981 (Emerald-500) 
+- **Accent Color**: #8B5CF6 (Violet-500)
+- **Error**: #EF4444 (Red-500)
+- **Warning**: #F59E0B (Amber-500)
+- **Success**: #22C55E (Green-500)
 - **Typography**: Inter (UI), Monaco (Code)
+- **Border Radius**: 8px (cards), 6px (inputs), 4px (buttons)
 
 ### Component Library
 - Shadcn/ui components with Tailwind CSS
@@ -307,13 +309,95 @@ Templates List → Select Template → Upload CSV → Map Columns → Generate A
 ### Frontend
 - Code splitting by route
 - Lazy loading for modals
-- Image optimization
-- Virtual scrolling for lists
-- React Query for caching
+- Image optimization with WebP
+- Virtual scrolling for lists > 100 items
+- React Query for caching with 5min stale time
 
 ### UX Optimizations
-- Optimistic UI updates
-- Auto-save in editor
-- Debounced search
-- Pagination for lists
+- Optimistic UI updates with rollback
+- Auto-save in editor (5 second debounce)
+- Debounced search (300ms)
+- Pagination (25 items default)
 - Progressive enhancement
+
+## Real-time Features
+
+### WebSocket Progress Tracking
+```typescript
+interface ProgressUpdate {
+  total: number
+  completed: number
+  current: string
+  errors: string[]
+  eta: number
+}
+```
+
+### Live Collaboration (Future)
+- Presence indicators
+- Cursor positions
+- Live text updates
+- Conflict resolution
+
+## Document Processing Pipeline
+
+### Upload Flow
+1. File validation (type, size)
+2. Upload to Supabase Storage
+3. Extract text content
+4. Parse formatting metadata
+5. Create template record
+6. Generate preview
+
+### Generation Flow  
+1. Load template version
+2. Validate variable inputs
+3. Process through Edge Function
+4. Apply formatting
+5. Generate output format
+6. Store in Supabase Storage
+7. Return download URL
+
+## Template Marketplace (Phase 3)
+
+### Discovery
+- Categories (Legal, Business, Personal)
+- Search with filters
+- Popular templates
+- Featured creators
+
+### Monetization
+- Free tier (5 uses/month)
+- Premium templates
+- Revenue sharing (70/30)
+- Subscription model
+
+## Technical Specifications
+
+### API Endpoints (Supabase Edge Functions)
+```
+POST   /templates/upload
+GET    /templates/:id
+PUT    /templates/:id/variables
+POST   /templates/:id/generate
+POST   /templates/:id/generate-bulk
+DELETE /templates/:id
+GET    /documents/history
+```
+
+### Database Relations
+```
+profiles (1) → (N) templates
+templates (1) → (N) template_versions  
+templates (1) → (N) variables
+templates (1) → (N) generated_documents
+template_versions (1) → (N) generated_documents
+```
+
+### Security Considerations
+- Row Level Security on all tables
+- File size limits (10MB)
+- Rate limiting (100 req/min)
+- Input sanitization
+- XSS prevention
+- CORS configuration
