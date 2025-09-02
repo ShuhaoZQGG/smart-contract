@@ -1,325 +1,431 @@
-# Smart Contract Document Template System - UI/UX Design Specifications
+# Smart Contract Document Template System - UI/UX Design
 
 ## Design System
 
-### Brand Identity
-- **Primary Color**: #3B82F6 (Blue-500)
-- **Secondary Color**: #10B981 (Emerald-500)
-- **Accent Color**: #8B5CF6 (Violet-500)
-- **Error**: #EF4444 (Red-500)
-- **Warning**: #F59E0B (Amber-500)
-- **Success**: #22C55E (Green-500)
-- **Typography**: Inter (UI), Fira Code (editor), Monaco (code preview)
-- **Spacing**: 4px base unit system
-- **Border Radius**: 8px (cards), 6px (buttons), 4px (inputs)
-- **Shadows**: Tailwind shadow scale
+### Color Palette
+- **Primary**: #3B82F6 (Blue 500)
+- **Secondary**: #10B981 (Emerald 500)
+- **Accent**: #8B5CF6 (Violet 500)
+- **Error**: #EF4444
+- **Warning**: #F59E0B
+- **Success**: #22C55E
+- **Background**: #FFFFFF / #F9FAFB
+- **Dark Mode**: #111827 / #1F2937
 
-### Component Library
-- Shadcn/ui components with Tailwind CSS
-- Supabase Auth UI components
-- React Hook Form for form handling
-- Tanstack Table for data grids
-- Radix UI primitives for accessibility
-- Framer Motion for animations
+### Typography
+- **Headings**: Inter, system-ui
+- **Body**: Inter, system-ui
+- **Code**: 'Fira Code', monospace
+
+### Spacing Grid
+- Base unit: 4px
+- Common spacings: 8px, 16px, 24px, 32px, 48px
 
 ## User Journeys
 
-### 1. First-Time User Flow
+### 1. First-Time User Journey
 ```
-Landing → Sign Up → Email Verification → Dashboard → Upload First Template
-```
-
-### 2. Template Creation Flow
-```
-Dashboard → Upload Document → Template Editor → Insert Variables → Save Template
+Landing → Sign Up (Supabase Auth) → Dashboard → Upload Template → Edit Variables → Generate Document
 ```
 
-### 3. Document Generation Flow
+**Key Touchpoints:**
+- Clear value proposition on landing
+- Streamlined Supabase Auth UI
+- Interactive onboarding tour
+- Sample templates gallery
+
+### 2. Returning User Journey
 ```
-Templates List → Select Template → Fill Variables → Preview → Generate → Download
+Sign In → Dashboard → Select Template → Quick Generate OR Bulk Generate
 ```
 
-### 4. Bulk Generation Flow
+**Key Touchpoints:**
+- Recent templates quick access
+- Saved variable sets
+- Generation history
+
+### 3. Power User Journey
 ```
-Templates List → Select Template → Upload CSV → Map Columns → Generate All → Download ZIP
+Dashboard → Template Editor → Advanced Variables → Collaboration → Bulk Operations
 ```
 
-## Page Designs
+**Key Touchpoints:**
+- Keyboard shortcuts
+- Batch operations
+- Team workspace
+
+## Page Layouts
 
 ### Landing Page
 ```
-┌────────────────────────────────────────────────────────┐
-│  [Logo] Smart Contract              [Sign In] [Sign Up]│
-├────────────────────────────────────────────────────────┤
-│                                                        │
-│        Transform Documents into Smart Templates        │
-│                                                        │
-│     Upload → Insert Variables → Generate Documents     │
-│                                                        │
-│                    [Get Started Free]                  │
-│                                                        │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
-│  │ Upload   │→ │ Edit     │→ │ Generate │           │
-│  │ Document │  │ Template │  │ Docs     │           │
-│  └──────────┘  └──────────┘  └──────────┘           │
-│                                                        │
-│  Features:                                             │
-│  ✓ Any document format    ✓ Bulk generation          │
-│  ✓ Variable insertion     ✓ CSV import              │
-│  ✓ Format preservation    ✓ Secure storage          │
-└────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│  Logo  [Features] [Pricing] [Sign In] [Start]│
+├─────────────────────────────────────────────┤
+│                                             │
+│     Transform Any Document Into            │
+│     A Smart Template                       │
+│                                             │
+│     [Upload Your First Template →]         │
+│                                             │
+│     ┌──────┐  ┌──────┐  ┌──────┐         │
+│     │Upload│→ │Insert│→ │Generate│        │
+│     │ Doc  │  │ Vars │  │ Docs  │         │
+│     └──────┘  └──────┘  └──────┘         │
+│                                             │
+└─────────────────────────────────────────────┘
 ```
 
 ### Dashboard
 ```
-┌────────────────────────────────────────────────────────┐
-│  [≡] Smart Contract        [Search...]    [👤] Profile │
-├────────────────────────────────────────────────────────┤
-│                                                        │
-│  Welcome back, {{userName}}                           │
-│                                                        │
-│  Quick Actions:                                       │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ │
-│  │ + New        │ │ 📄 Generate  │ │ 📊 Bulk      │ │
-│  │   Template   │ │    Document  │ │    Generate  │ │
-│  └──────────────┘ └──────────────┘ └──────────────┘ │
-│                                                        │
-│  Recent Templates                           [View All]│
-│  ┌────────────────────────────────────────────────┐  │
-│  │ Name            Variables    Last Modified      │  │
-│  ├────────────────────────────────────────────────┤  │
-│  │ 📄 Loan Agreement    6       2 hours ago       │  │
-│  │ 📄 Invoice Template   8       Yesterday         │  │
-│  │ 📄 NDA Contract       5       3 days ago        │  │
-│  └────────────────────────────────────────────────┘  │
-│                                                        │
-│  Recent Generations                                   │
-│  • Generated 5 documents from "Loan Agreement"        │
-│  • Generated 1 document from "Invoice Template"       │
-└────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│ 📄 Smart Contract  [Search...] [👤] [Settings]│
+├────┬────────────────────────────────────────┤
+│    │  Dashboard                             │
+│ 📁 │  ┌─────────────────────────────┐      │
+│    │  │ + New Template              │      │
+│ 📋 │  └─────────────────────────────┘      │
+│    │                                        │
+│ 📊 │  Recent Templates                      │
+│    │  ┌──────┐ ┌──────┐ ┌──────┐         │
+│ ⚙️ │  │Contract│ │Invoice│ │Report │        │
+│    │  │  📄   │ │  📄   │ │  📄   │        │
+│    │  └──────┘ └──────┘ └──────┘         │
+│    │                                        │
+│    │  Quick Actions                         │
+│    │  [Upload] [Generate] [Browse Gallery] │
+└────┴────────────────────────────────────────┘
+
+Sidebar:
+- Templates (with count)
+- Generated (history)
+- Analytics
+- Settings
 ```
 
-### Template Editor
+### Template Editor (Rich Text)
 ```
-┌────────────────────────────────────────────────────────┐
-│  ← Back   Template: {{templateName}}                  │
-│                                                        │
-│  [Save] [Preview] [Settings]           Auto-saved ✓   │
-├────────────────────────────────────────────────────────┤
-│                                    │ Variables (6)    │
-│  ┌──────────────────────────────┐ │ ┌──────────────┐ │
-│  │ Toolbar:                     │ │ │ {{bank_name}} │ │
-│  │ [B] [I] [U] | [{{}}] [🎨]   │ │ │ {{client}}    │ │
-│  ├──────────────────────────────┤ │ │ {{date}}      │ │
-│  │                              │ │ │ {{amount}}    │ │
-│  │ Loan Agreement               │ │ │ {{rate}}      │ │
-│  │                              │ │ │ {{due_date}}  │ │
-│  │ This agreement is between    │ │ └──────────────┘ │
-│  │ {{bank_name}} and           │ │                  │
-│  │ {{client_name}} for a loan  │ │ [+ Add Variable] │
-│  │ amount of {{loan_amount}}.  │ │                  │
-│  │                              │ │ Variable Details:│
-│  │ Interest Rate: {{rate}}%    │ │ Name: bank_name  │
-│  │ Due Date: {{due_date}}      │ │ Type: Text       │
-│  │                              │ │ Required: Yes    │
-│  │ [Type to continue...]        │ │ Default: ""      │
-│  └──────────────────────────────┘ └──────────────────┘
-└────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│ ← Back  Template Name  [Save] [Preview] [...] │
+├─────────────────────────────────────────────┤
+│ [B][I][U] [T▼] [≡] [🔗] [{{}}] │ Variables │
+├─────────────────────────┬───────────────────┤
+│                         │ Used Variables:    │
+│  Document Title         │ ┌───────────────┐ │
+│                         │ │ client_name   │ │
+│  This agreement between │ │ bank_name     │ │
+│  {{bank_name}} and      │ │ loan_amount   │ │
+│  {{client_name}} for    │ │ interest_rate │ │
+│  the amount of          │ │ due_date      │ │
+│  {{loan_amount}}...     │ └───────────────┘ │
+│                         │                    │
+│  [Insert variable ↓]    │ Variable Settings: │
+│                         │ Type: [Text ▼]     │
+│                         │ Required: [✓]      │
+│                         │ Default: [____]    │
+└─────────────────────────┴───────────────────┘
+
+Toolbar Features:
+- Bold, Italic, Underline
+- Text size/style
+- Alignment
+- Links
+- Variable insertion ({{}})
 ```
 
-### Variable Input Form
+### Generation Interface
 ```
-┌────────────────────────────────────────────────────────┐
-│  Generate Document: Loan Agreement                     │
-├────────────────────────────────────────────────────────┤
-│                                                        │
-│  Fill in the template variables:                      │
-│                                                        │
-│  Bank Name *                                          │
-│  [_________________________________]                   │
-│                                                        │
-│  Client Name *                                        │
-│  [_________________________________]                   │
-│                                                        │
-│  Agreement Date *                                     │
-│  [📅 Select Date___________________]                  │
-│                                                        │
-│  Loan Amount *                                        │
-│  [$________________________________]                   │
-│                                                        │
-│  Interest Rate (%) *                                  │
-│  [_________________________________]                   │
-│                                                        │
-│  Due Date *                                           │
-│  [📅 Select Date___________________]                  │
-│                                                        │
-│  Output Format:                                       │
-│  (•) PDF  ( ) DOCX  ( ) Both                         │
-│                                                        │
-│  [Preview] [Generate Document]                        │
-└────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│  Generate Document from: Contract Template   │
+├─────────────────────────────────────────────┤
+│                                             │
+│  Fill Variable Values:                      │
+│                                             │
+│  Client Name *                              │
+│  [_____________________________]            │
+│                                             │
+│  Bank Name *                                │
+│  [_____________________________]            │
+│                                             │
+│  Loan Amount *                              │
+│  $ [___________]                           │
+│                                             │
+│  Interest Rate                              │
+│  [___] %                                    │
+│                                             │
+│  Due Date                                   │
+│  [📅 Select Date_______________]            │
+│                                             │
+│  [Preview Document]  [Generate PDF] [DOCX]  │
+└─────────────────────────────────────────────┘
 ```
 
-### Bulk Generation Interface
+### Bulk Generation
 ```
-┌────────────────────────────────────────────────────────┐
-│  Bulk Generate: Loan Agreement                        │
-├────────────────────────────────────────────────────────┤
-│                                                        │
-│  Step 1: Upload CSV File                              │
-│  ┌────────────────────────────────────────────────┐  │
-│  │         📁 Drop CSV file here or browse         │  │
-│  │                                                 │  │
-│  │              [Choose File]                      │  │
-│  └────────────────────────────────────────────────┘  │
-│                                                        │
-│  Step 2: Map CSV Columns to Variables                 │
-│  ┌────────────────────────────────────────────────┐  │
-│  │ Template Variable    →    CSV Column           │  │
-│  ├────────────────────────────────────────────────┤  │
-│  │ bank_name           →    [Select Column ▼]    │  │
-│  │ client_name         →    [Select Column ▼]    │  │
-│  │ agreement_date      →    [Select Column ▼]    │  │
-│  │ loan_amount         →    [Select Column ▼]    │  │
-│  │ interest_rate       →    [Select Column ▼]    │  │
-│  │ due_date           →    [Select Column ▼]    │  │
-│  └────────────────────────────────────────────────┘  │
-│                                                        │
-│  Preview First Row:                                   │
-│  • bank_name: "First National Bank"                   │
-│  • client_name: "John Smith"                          │
-│  • loan_amount: "$50,000"                            │
-│                                                        │
-│  [Generate 25 Documents]                              │
-└────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│  Bulk Generate from: Contract Template       │
+├─────────────────────────────────────────────┤
+│                                             │
+│  📁 Upload CSV File                         │
+│  ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐              │
+│  │  Drop CSV file here or    │              │
+│  │  [Browse Files]           │              │
+│  └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘              │
+│                                             │
+│  Column Mapping:                            │
+│  ┌──────────────┬──────────────┐           │
+│  │ CSV Column   │ Template Var │           │
+│  ├──────────────┼──────────────┤           │
+│  │ Name         → client_name  │           │
+│  │ Bank         → bank_name    │           │
+│  │ Amount       → loan_amount  │           │
+│  │ Rate         → interest_rate│           │
+│  │ Due          → due_date     │           │
+│  └──────────────┴──────────────┘           │
+│                                             │
+│  Output: [PDF ▼]  [Generate All]           │
+│                                             │
+│  Progress: ████████░░ 80% (8/10)           │
+└─────────────────────────────────────────────┘
 ```
 
-### Templates Library
+## Component Library
+
+### Buttons
 ```
-┌────────────────────────────────────────────────────────┐
-│  My Templates                    [+ New Template]     │
-├────────────────────────────────────────────────────────┤
-│                                                        │
-│  [Search templates...]  [All ▼] [Date Created ▼]     │
-│                                                        │
-│  ┌──────────────────────────────────────────────────┐ │
-│  │ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐│ │
-│  │ │   📄        │ │   📄        │ │   📄        ││ │
-│  │ │             │ │             │ │             ││ │
-│  │ │ Loan        │ │ Invoice     │ │ NDA         ││ │
-│  │ │ Agreement   │ │ Template    │ │ Contract    ││ │
-│  │ │             │ │             │ │             ││ │
-│  │ │ 6 variables │ │ 8 variables │ │ 5 variables ││ │
-│  │ │ Used 15×    │ │ Used 23×    │ │ Used 7×     ││ │
-│  │ │             │ │             │ │             ││ │
-│  │ │ [Edit][Use] │ │ [Edit][Use] │ │ [Edit][Use] ││ │
-│  │ └─────────────┘ └─────────────┘ └─────────────┘│ │
-│  │                                                  │ │
-│  │ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐│ │
-│  │ │   📄        │ │   📄        │ │   📄        ││ │
-│  │ │ Employment  │ │ Service     │ │ Purchase    ││ │
-│  │ │ Contract    │ │ Agreement   │ │ Order       ││ │
-│  │ └─────────────┘ └─────────────┘ └─────────────┘│ │
-│  └──────────────────────────────────────────────────┘ │
-└────────────────────────────────────────────────────────┘
+Primary:   [Generate Document]  - Blue, filled
+Secondary: [Preview]            - Gray, outlined
+Danger:    [Delete]            - Red, filled
+Ghost:     [Cancel]            - Transparent
 ```
 
-## Mobile Responsive Design
+### Form Elements
+```
+Text Input:    [_________________]
+Select:        [Option ▼]
+Date Picker:   [📅 MM/DD/YYYY]
+File Upload:   [📁 Choose File]
+Toggle:        [○─────]
+Checkbox:      [✓] Option
+```
+
+### Cards
+```
+┌─────────────────────┐
+│ Template Name       │
+│ Last edited: 2 hrs  │
+│ 5 variables         │
+│ [Edit] [Generate]   │
+└─────────────────────┘
+```
+
+### Modals
+```
+┌──────────────────────┐
+│ × │ Confirm Delete   │
+├──────────────────────┤
+│ Delete this template?│
+│                      │
+│ [Cancel] [Delete]    │
+└──────────────────────┘
+```
+
+## Responsive Design
 
 ### Breakpoints
 - Mobile: 320px - 768px
-- Tablet: 768px - 1024px  
+- Tablet: 768px - 1024px
 - Desktop: 1024px+
 
-### Mobile Template Editor
+### Mobile Layout
 ```
 ┌─────────────┐
-│ ☰ │Template │
+│ ☰ Logo  👤  │
 ├─────────────┤
+│ Templates   │
+│ ┌─────────┐ │
+│ │Template │ │
+│ └─────────┘ │
+│ ┌─────────┐ │
+│ │Template │ │
+│ └─────────┘ │
 │             │
-│ Editor      │
-│ [{{}}]      │
-│             │
-│ Agreement   │
-│ between     │
-│ {{bank}}    │
-│ and {{client}}│
-│             │
-├─────────────┤
-│ Variables(2)│
-│ • bank      │
-│ • client    │
+│ [+ New]     │
 └─────────────┘
 ```
 
-## Accessibility (WCAG 2.1 AA)
+### Tablet Layout
+- 2-column grid for templates
+- Collapsible sidebar
+- Touch-optimized controls
 
-### Keyboard Navigation
-- Tab order follows logical flow
-- All interactive elements keyboard accessible
-- Skip links for main content
-- Escape key closes modals
+## Accessibility
+
+### WCAG 2.1 AA Compliance
+- Color contrast ratio: 4.5:1 minimum
+- Focus indicators: 2px blue outline
+- Skip navigation links
+- ARIA labels for icons
+- Keyboard navigation support
+
+### Keyboard Shortcuts
+- `Ctrl/Cmd + S`: Save template
+- `Ctrl/Cmd + P`: Preview
+- `Ctrl/Cmd + G`: Generate
+- `Tab`: Navigate fields
+- `Esc`: Close modals
 
 ### Screen Reader Support
 - Semantic HTML structure
-- ARIA labels for icons
-- Form field descriptions
+- Descriptive alt text
+- Form field labels
 - Status announcements
 
-### Visual Accessibility
-- Minimum contrast ratio 4.5:1
-- Focus indicators visible
-- Resizable text up to 200%
-- No color-only information
+## Loading States
 
-## Supabase Auth Integration
+### Skeleton Screens
+```
+┌─────────────┐
+│ ░░░░░░░░░░  │
+│ ░░░░░░░     │
+│ ░░░░░░░░░░░ │
+└─────────────┘
+```
 
-### Sign Up Flow
-1. Email/password registration
-2. Email verification via Supabase
-3. Profile creation
-4. Redirect to dashboard
-
-### Sign In Options
-- Email/password
-- Magic link
-- OAuth (Google, GitHub)
-- Remember me option
-
-### Password Reset
-1. Request reset email
-2. Click verification link
-3. Set new password
-4. Auto sign in
+### Progress Indicators
+- Spinner: ⟳ (for quick actions)
+- Progress bar: ████░░░░ (for bulk operations)
+- Percentage: "Processing... 75%"
 
 ## Error States
 
+### Inline Validation
+```
+Email *
+[invalid@email]
+⚠️ Please enter a valid email
+```
+
 ### Empty States
-- "No templates yet. Create your first template!"
-- "No recent activity. Start by uploading a document."
+```
+┌─────────────────────┐
+│                     │
+│    📄              │
+│  No templates yet   │
+│                     │
+│ [Create Your First] │
+└─────────────────────┘
+```
 
-### Loading States
-- Skeleton screens for content
-- Progress bars for uploads
-- Spinners for quick actions
+## Animation & Transitions
 
-### Error Messages
-- "Failed to upload. File size must be under 10MB."
-- "Variable name already exists. Choose another name."
-- "Network error. Please check your connection."
+### Micro-interactions
+- Button hover: Scale 1.02, shadow
+- Card hover: Lift with shadow
+- Variable insertion: Highlight fade
+- Success: Green checkmark animation
+
+### Page Transitions
+- Fade: 200ms ease-in-out
+- Slide: 300ms cubic-bezier
+- Modal: Backdrop fade + scale
+
+## Dark Mode
+
+### Color Adjustments
+- Background: #111827
+- Cards: #1F2937
+- Text: #F9FAFB
+- Borders: #374151
+- Primary: #60A5FA (Blue 400)
 
 ## Performance Optimizations
 
-### Frontend
-- Code splitting by route
-- Lazy loading for modals
-- Image optimization
-- Virtual scrolling for lists
-- React Query for caching
+### Image Optimization
+- Lazy loading for template previews
+- WebP format with fallbacks
+- Responsive image sizes
 
-### UX Optimizations
-- Optimistic UI updates
-- Auto-save in editor
-- Debounced search
-- Pagination for lists
-- Progressive enhancement
+### Code Splitting
+- Route-based splitting
+- Dynamic imports for heavy components
+- Vendor bundle separation
+
+### Caching Strategy
+- Service worker for offline support
+- Template caching
+- Variable sets local storage
+
+## Mobile-Specific Features
+
+### Touch Gestures
+- Swipe to delete templates
+- Pull to refresh
+- Pinch to zoom preview
+
+### Native Features
+- Share API for documents
+- Camera for document scan
+- File system access
+
+## Collaboration Features (Future)
+
+### Real-time Indicators
+```
+┌─────────────────────┐
+│ 👤 John editing...  │
+│ 👤 Sarah viewing    │
+└─────────────────────┘
+```
+
+### Commenting System
+```
+│ This clause needs review
+│ └─ @john: Updated the terms
+│   └─ @sarah: Looks good ✓
+```
+
+## Technical Recommendations
+
+### Frontend Stack
+- **Framework**: React 18 with TypeScript
+- **Styling**: Tailwind CSS + Headless UI
+- **State**: Zustand for simple state
+- **Forms**: React Hook Form + Zod
+- **Rich Text**: Lexical (Facebook's editor)
+- **Icons**: Heroicons
+- **Animations**: Framer Motion
+
+### Component Architecture
+```
+src/
+├── components/
+│   ├── ui/          (Button, Input, Card)
+│   ├── layout/      (Header, Sidebar, Footer)
+│   ├── editor/      (RichTextEditor, VariableInserter)
+│   ├── generation/  (GenerationForm, BulkUploader)
+│   └── templates/   (TemplateCard, TemplateList)
+├── pages/
+├── hooks/
+└── utils/
+```
+
+### Supabase Auth Integration
+- Use Supabase Auth UI components
+- Social logins: Google, GitHub
+- Magic link support
+- Session persistence
+- Protected routes with RLS
+
+## Success Metrics
+
+### UX Metrics
+- Time to first template: < 2 minutes
+- Variable insertion accuracy: > 95%
+- Generation success rate: > 99%
+- Mobile usage: > 30%
+
+### Performance Metrics
+- First Contentful Paint: < 1.5s
+- Time to Interactive: < 3s
+- Lighthouse Score: > 90
+- Bundle size: < 200KB gzipped
