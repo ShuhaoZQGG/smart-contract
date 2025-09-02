@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { Plus, FileText, Download, Upload, LogOut, Menu } from 'lucide-react'
+import { Plus, FileText, Upload, LogOut, Menu } from 'lucide-react'
 
 interface Template {
   id: string

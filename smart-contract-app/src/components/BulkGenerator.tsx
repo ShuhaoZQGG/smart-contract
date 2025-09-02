@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, Download, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { Upload, FileText, Download, CheckCircle, X } from 'lucide-react';
 import { edgeFunctions } from '../services/edgeFunctions';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -36,18 +36,20 @@ const BulkGenerator: React.FC = () => {
 
   React.useEffect(() => {
     loadTemplates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
     if (selectedTemplate) {
       loadTemplateVariables(selectedTemplate);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTemplate]);
 
   const loadTemplates = async () => {
     if (!user) return;
 
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('templates')
       .select('id, name, description')
       .eq('user_id', user.id)

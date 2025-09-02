@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Save, Eye, Variable, Download, AlertCircle, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { edgeFunctions } from '../services/edgeFunctions';
@@ -15,7 +15,6 @@ interface VariableInfo {
 
 const TemplateEditorEnhanced: React.FC = () => {
   const { templateId } = useParams<{ templateId: string }>();
-  const navigate = useNavigate();
   const { user } = useAuth();
   const editorRef = useRef<HTMLTextAreaElement>(null);
 
@@ -34,6 +33,7 @@ const TemplateEditorEnhanced: React.FC = () => {
     if (templateId) {
       loadTemplate();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId]);
 
   useEffect(() => {
@@ -54,6 +54,7 @@ const TemplateEditorEnhanced: React.FC = () => {
         clearTimeout(autoSaveTimer);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content]);
 
   const loadTemplate = async () => {
@@ -74,7 +75,7 @@ const TemplateEditorEnhanced: React.FC = () => {
       setTemplateName(template.name);
 
       // Load latest template version
-      const { data: version, error: versionError } = await supabase
+      const { data: version } = await supabase
         .from('template_versions')
         .select('content')
         .eq('template_id', templateId)

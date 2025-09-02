@@ -108,7 +108,7 @@ export const generatePdfFromText = async (
     // Add pages and content
     const lines = content.split('\n');
     let currentPage = pdfDoc.addPage();
-    let { width, height } = currentPage.getSize();
+    let { height } = currentPage.getSize();
     let yPosition = height - 50;
     const fontSize = 12;
     const lineHeight = fontSize * 1.2;
@@ -161,7 +161,7 @@ export const convertHtmlToPdf = async (htmlContent: string): Promise<ProcessingR
     
     // Add a page
     const page = pdfDoc.addPage();
-    const { width, height } = page.getSize();
+    const { height } = page.getSize();
     const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
     
     // Strip HTML tags and convert to plain text (simple approach)
