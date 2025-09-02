@@ -21,6 +21,8 @@
 - Tanstack Table for data grids
 - Radix UI primitives for accessibility
 - Framer Motion for animations
+- Lexical/Slate.js for rich text editing
+- Recharts for analytics visualizations
 
 ## User Journeys
 
@@ -313,13 +315,115 @@ Templates List → Select Template → Upload CSV → Map Columns → Generate A
 ### Frontend
 - Code splitting by route
 - Lazy loading for modals
-- Image optimization
-- Virtual scrolling for lists
-- React Query for caching
+- Image optimization with Next/Image
+- Virtual scrolling for template lists
+- React Query for caching Supabase data
+- Web Workers for CSV processing
+- Service Worker for offline support
 
 ### UX Optimizations
 - Optimistic UI updates
-- Auto-save in editor
-- Debounced search
-- Pagination for lists
+- Auto-save every 30 seconds in editor
+- Debounced search (300ms)
+- Infinite scroll pagination
 - Progressive enhancement
+- Skeleton loaders for content
+- Edge Function response caching
+
+## Real-time Features
+
+### Live Collaboration
+- WebSocket connection via Supabase Realtime
+- Presence indicators for active users
+- Live cursor positions in editor
+- Conflict resolution for concurrent edits
+- Activity feed for template changes
+
+### Notifications
+- Template shared with you
+- Document generation complete
+- Bulk generation progress
+- Version conflict warnings
+- Storage quota alerts
+
+## Analytics Dashboard
+
+### Usage Metrics
+```
+┌────────────────────────────────────────────────────────┐
+│  Analytics Overview                      [Export CSV]  │
+├────────────────────────────────────────────────────────┤
+│                                                        │
+│  Documents Generated (30 days)                        │
+│  ┌────────────────────────────────────────────────┐  │
+│  │     📈                                         │  │
+│  │    ╱╲    156 total                           │  │
+│  │   ╱  ╲   Peak: March 15 (23 docs)           │  │
+│  │  ╱    ╲___╱╲                                │  │
+│  │ ╱          ╲                                │  │
+│  └────────────────────────────────────────────────┘  │
+│                                                        │
+│  Top Templates            │  Variable Usage          │
+│  1. Loan Agreement (45%)  │  • client_name (100%)   │
+│  2. Invoice (30%)         │  • date (95%)           │
+│  3. Contract (25%)        │  • amount (89%)         │
+│                           │  • company (76%)        │
+│                                                        │
+│  Generation Time          │  Format Distribution     │
+│  Avg: 2.3s               │  PDF: 67%               │
+│  Min: 0.8s               │  DOCX: 33%              │
+│  Max: 5.1s               │                          │
+└────────────────────────────────────────────────────────┘
+```
+
+## Template Marketplace (Future)
+
+### Discovery Interface
+```
+┌────────────────────────────────────────────────────────┐
+│  Template Marketplace            [Search...] [Filter] │
+├────────────────────────────────────────────────────────┤
+│                                                        │
+│  Categories: [Legal] [Sales] [HR] [Finance] [All]     │
+│                                                        │
+│  Featured Templates                                   │
+│  ┌─────────────────────────────────────────────────┐ │
+│  │ ⭐ NDA Template          │ 📄 Invoice Generator  │ │
+│  │ By: LegalPro            │ By: BizTools          │ │
+│  │ 500+ uses, 4.8★         │ 450+ uses, 4.9★       │ │
+│  │ [Preview] [Use]         │ [Preview] [Use]       │ │
+│  └─────────────────────────────────────────────────┘ │
+│                                                        │
+│  Browse by Industry                                   │
+│  • Legal & Compliance (124)                          │
+│  • Sales & Marketing (89)                            │
+│  • Human Resources (67)                              │
+│  • Finance & Accounting (103)                        │
+└────────────────────────────────────────────────────────┘
+```
+
+## Advanced Features
+
+### Template Logic & Conditions
+- IF/THEN conditional sections
+- Calculated fields (formulas)
+- Date calculations
+- Number formatting
+- List iterations
+- Nested variables
+
+### Integration Capabilities
+- Webhook triggers on generation
+- API access for external systems
+- Zapier/Make.com connectors
+- Google Sheets sync
+- Slack notifications
+- Email delivery
+
+### Security & Compliance
+- End-to-end encryption for sensitive templates
+- Audit logs for all actions
+- GDPR compliance tools
+- Data retention policies
+- Role-based access control
+- IP allowlisting
