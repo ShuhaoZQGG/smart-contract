@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { ArrowLeft, Save, Eye, Settings, Plus, X } from 'lucide-react'
+import LexicalEditor from '../components/LexicalEditor/LexicalEditor'
+import '../components/LexicalEditor/LexicalEditor.css'
+import { Variable } from '../types'
 
-interface Variable {
+interface TemplateVariable {
   id?: string
   name: string
   display_name: string
@@ -18,10 +21,11 @@ const TemplateEditor: React.FC = () => {
   
   const [template, setTemplate] = useState<any>(null)
   const [content, setContent] = useState('')
-  const [variables, setVariables] = useState<Variable[]>([])
+  const [variables, setVariables] = useState<TemplateVariable[]>([])
   const [showVariablePanel, setShowVariablePanel] = useState(true)
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [lastSaved, setLastSaved] = useState<Date | null>(null)
 
   useEffect(() => {
     fetchTemplate()
@@ -68,39 +72,29 @@ const TemplateEditor: React.FC = () => {
     }
   }
 
+  const handleEditorChange = useCallback((newContent: string) => {
+    setContent(newContent)
+  }, [])
+
+  const handleVariablesChange = useCallback((newVariables: Variable[]) => {
+    // Map Lexical variables to template variables
+    const templateVars = newVariables.map(v => {
+      const existing = variables.find(tv => tv.name === v.name)
+      return existing || {
+        name: v.name,
+        display_name: v.displayName,
+        data_type: v.dataType || 'text',
+        is_required: v.isRequired || true,
+        default_value: v.defaultValue || ''
+      }
+    })
+    setVariables(templateVars)
+  }, [variables])
+
   const extractVariables = (text: string): string[] => {
     const regex = /\{\{(\w+)\}\}/g
     const matches = text.match(regex) || []
     return Array.from(new Set(matches.map(m => m.replace(/\{\{|\}\}/g, ''))))
-  }
-
-  const insertVariable = () => {
-    const varName = prompt('Enter variable name:')
-    if (varName && editorRef.current) {
-      const textarea = editorRef.current
-      const start = textarea.selectionStart
-      const end = textarea.selectionEnd
-      const newContent = 
-        content.substring(0, start) + 
-        `{{${varName}}}` + 
-        content.substring(end)
-      
-      setContent(newContent)
-      
-      // Update variables list
-      const extractedVars = extractVariables(newContent)
-      const newVars = extractedVars.map(name => {
-        const existing = variables.find(v => v.name === name)
-        return existing || {
-          name,
-          display_name: name.replace(/_/g, ' '),
-          data_type: 'text',
-          is_required: true,
-          default_value: ''
-        }
-      })
-      setVariables(newVars)
-    }
   }
 
   const saveTemplate = async () => {
@@ -155,6 +149,7 @@ const TemplateEditor: React.FC = () => {
         }
       }
 
+      setLastSaved(new Date())
       alert('Template saved successfully!')
     } catch (error) {
       console.error('Error saving template:', error)
@@ -164,11 +159,22 @@ const TemplateEditor: React.FC = () => {
     }
   }
 
-  const updateVariable = (index: number, field: keyof Variable, value: any) => {
+  const updateVariable = (index: number, field: keyof TemplateVariable, value: any) => {
     const newVariables = [...variables]
     newVariables[index] = { ...newVariables[index], [field]: value }
     setVariables(newVariables)
   }
+
+  // Auto-save functionality
+  useEffect(() => {
+    const autoSaveInterval = setInterval(() => {
+      if (content && !saving) {
+        saveTemplate()
+      }
+    }, 30000) // Auto-save every 30 seconds
+
+    return () => clearInterval(autoSaveInterval)
+  }, [content, saving])
 
   if (loading) {
     return (
@@ -192,7 +198,9 @@ const TemplateEditor: React.FC = () => {
             </h1>
           </div>
           <div className="flex items-center space-x-3">
-            <span className="text-sm text-gray-500">Auto-saved ✓</span>
+            <span className="text-sm text-gray-500">
+              {lastSaved ? `Auto-saved ${lastSaved.toLocaleTimeString()} ✓` : 'Auto-save enabled'}
+            </span>
             <button
               onClick={saveTemplate}
               disabled={saving}
@@ -217,25 +225,14 @@ const TemplateEditor: React.FC = () => {
       <div className="flex h-[calc(100vh-80px)]">
         {/* Editor */}
         <div className="flex-1 p-6">
-          <div className="bg-white rounded-lg shadow h-full flex flex-col">
-            {/* Toolbar */}
-            <div className="border-b px-4 py-3 flex items-center space-x-4">
-              <button
-                onClick={insertVariable}
-                className="flex items-center space-x-1 px-3 py-1 bg-gray-100 rounded hover:bg-gray-200"
-              >
-                <Plus className="h-4 w-4" />
-                <span className="text-sm">{`{{}}`}</span>
-              </button>
-            </div>
-            
-            {/* Text Editor */}
-            <textarea
-              ref={editorRef}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="flex-1 p-4 resize-none focus:outline-none font-mono text-sm"
+          <div className="bg-white rounded-lg shadow h-full">
+            <LexicalEditor
+              initialContent={content}
+              onChange={handleEditorChange}
+              onVariablesChange={handleVariablesChange}
               placeholder="Start typing your template here. Use {{variable_name}} to insert variables..."
+              autoSave={true}
+              autoSaveInterval={30000}
             />
           </div>
         </div>
@@ -306,14 +303,6 @@ const TemplateEditor: React.FC = () => {
                 </p>
               )}
             </div>
-            
-            <button
-              onClick={insertVariable}
-              className="mt-4 w-full flex items-center justify-center space-x-2 border-2 border-dashed border-gray-300 rounded-lg py-2 hover:border-gray-400"
-            >
-              <Plus className="h-4 w-4" />
-              <span className="text-sm">Add Variable</span>
-            </button>
           </div>
         )}
       </div>
