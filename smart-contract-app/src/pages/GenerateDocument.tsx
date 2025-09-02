@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { ArrowLeft, Download, Eye, Upload } from 'lucide-react'
-import DocumentPreview from '../components/DocumentPreview'
 
 interface Variable {
   id: string
@@ -17,7 +16,6 @@ interface Variable {
 const GenerateDocument: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
-  const navigate = useNavigate()
   
   const [template, setTemplate] = useState<any>(null)
   const [variables, setVariables] = useState<Variable[]>([])
@@ -29,6 +27,7 @@ const GenerateDocument: React.FC = () => {
 
   useEffect(() => {
     fetchTemplateData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   const fetchTemplateData = async () => {
@@ -98,7 +97,7 @@ const GenerateDocument: React.FC = () => {
       })
 
       // Save generated document record
-      const { data: docData, error: docError } = await supabase
+      const { error: docError } = await supabase
         .from('generated_documents')
         .insert({
           template_id: id,

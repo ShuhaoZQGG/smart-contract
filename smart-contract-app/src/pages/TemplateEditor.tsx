@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { ArrowLeft, Save, Eye, Settings, Plus, X } from 'lucide-react'
 
@@ -14,7 +14,6 @@ interface Variable {
 
 const TemplateEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
   const editorRef = useRef<HTMLTextAreaElement>(null)
   
   const [template, setTemplate] = useState<any>(null)
@@ -26,6 +25,7 @@ const TemplateEditor: React.FC = () => {
 
   useEffect(() => {
     fetchTemplate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   const fetchTemplate = async () => {
