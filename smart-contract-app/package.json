@@ -18,6 +18,8 @@
     "autoprefixer": "^10.4.21",
     "docxtemplater": "^3.66.0",
     "lucide-react": "^0.542.0",
+    "mammoth": "^1.10.0",
+    "pdf-lib": "^1.17.1",
     "pizzip": "^3.2.0",
     "postcss": "^8.5.6",
     "react": "^19.1.1",
