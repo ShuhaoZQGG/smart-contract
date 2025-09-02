@@ -1,7 +1,7 @@
 # Smart Contract Document Template System - Architectural Plan
 
 ## Executive Summary
-Web-based document personalization platform enabling users to transform any document into reusable templates with {{variable}} placeholders for automated, personalized document generation at scale.
+Web-based document personalization platform enabling users to transform any document into reusable templates with {{variable}} placeholders for automated, personalized document generation at scale. Leveraging Supabase for backend infrastructure and modern React for the frontend.
 
 ## Core Requirements (From Vision & README)
 
