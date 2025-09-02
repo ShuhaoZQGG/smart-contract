@@ -1,12 +1,15 @@
 # Next Cycle Tasks
 
-## ✅ COMPLETED IN CYCLE 1 (PR #5)
-1. **RLS Policies Optimized** - All auth.uid() replaced with (select auth.uid())
-2. **Duplicate Policies Removed** - 40+ duplicate policies consolidated
-3. **Security Fixed** - update_updated_at function search_path resolved
-4. **Indexes Optimized** - Added 3 missing, removed 5 unused
+## ⚠️ NEEDS REVISION IN CYCLE 1 (PR #6)
+**Critical**: Must implement actual code, not just documentation:
+1. **React Application Setup** - Create React + TypeScript + Vite project
+2. **Template Editor** - Build editor with variable insertion
+3. **Dashboard** - Implement template listing and management
+4. **Document Generation** - Create generation form and interface
+5. **Supabase Integration** - Connect to existing database
+6. **Variable Management** - Build variable management UI
 
-## High Priority - Feature Development
+## High Priority - Feature Development (After MVP)
 
 ## Medium Priority - Feature Enhancements
 1. **Document Processing**
