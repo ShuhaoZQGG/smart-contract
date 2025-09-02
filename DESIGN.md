@@ -1,20 +1,26 @@
-# UI/UX Design Specifications
+# Smart Contract Document Template System - UI/UX Design Specifications
 
 ## Design System
 
 ### Brand Identity
-- **Primary Color**: #3B82F6 (Blue)
-- **Secondary Color**: #10B981 (Green) 
-- **Accent Color**: #8B5CF6 (Purple)
-- **Error**: #EF4444
-- **Warning**: #F59E0B
-- **Typography**: Inter (UI), Monaco (Code)
+- **Primary Color**: #3B82F6 (Blue-500)
+- **Secondary Color**: #10B981 (Emerald-500)
+- **Accent Color**: #8B5CF6 (Violet-500)
+- **Error**: #EF4444 (Red-500)
+- **Warning**: #F59E0B (Amber-500)
+- **Success**: #22C55E (Green-500)
+- **Typography**: Inter (UI), Fira Code (editor), Monaco (code preview)
+- **Spacing**: 4px base unit system
+- **Border Radius**: 8px (cards), 6px (buttons), 4px (inputs)
+- **Shadows**: Tailwind shadow scale
 
 ### Component Library
 - Shadcn/ui components with Tailwind CSS
 - Supabase Auth UI components
 - React Hook Form for form handling
 - Tanstack Table for data grids
+- Radix UI primitives for accessibility
+- Framer Motion for animations
 
 ## User Journeys
 
