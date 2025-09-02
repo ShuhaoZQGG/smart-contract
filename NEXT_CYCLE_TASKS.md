@@ -1,19 +1,12 @@
 # Next Cycle Tasks
 
-## High Priority - Performance & Security
-1. **Optimize RLS Policies**
-   - Replace all `auth.uid()` with `(select auth.uid())` pattern
-   - Consolidate duplicate permissive policies
-   - Estimated: 14 policies across 5 tables need updating
+## ✅ COMPLETED IN CYCLE 1 (PR #5)
+1. **RLS Policies Optimized** - All auth.uid() replaced with (select auth.uid())
+2. **Duplicate Policies Removed** - 40+ duplicate policies consolidated
+3. **Security Fixed** - update_updated_at function search_path resolved
+4. **Indexes Optimized** - Added 3 missing, removed 5 unused
 
-2. **Database Performance**
-   - Add missing indexes on foreign keys:
-     - generated_documents.template_version_id
-     - template_versions.created_by
-   - Remove unused indexes to reduce overhead
-
-3. **Security Fix**
-   - Fix `update_updated_at` function search_path parameter
+## High Priority - Feature Development
 
 ## Medium Priority - Feature Enhancements
 1. **Document Processing**
