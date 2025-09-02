@@ -3,24 +3,27 @@
 ## Design System
 
 ### Brand Identity
-- **Primary Color**: #3B82F6 (Blue-500)
-- **Secondary Color**: #10B981 (Emerald-500)
+- **Primary Color**: #2563eb (Supabase brand blue)
+- **Secondary Color**: #10B981 (Success green)  
 - **Accent Color**: #8B5CF6 (Violet-500)
 - **Error**: #EF4444 (Red-500)
 - **Warning**: #F59E0B (Amber-500)
 - **Success**: #22C55E (Green-500)
-- **Typography**: Inter (UI), Fira Code (editor), Monaco (code preview)
-- **Spacing**: 4px base unit system
+- **Typography**: Inter (UI), Monaco/SF Mono (editor), system-ui (fallback)
+- **Spacing**: 4px base unit system (0.25rem increments)
 - **Border Radius**: 8px (cards), 6px (buttons), 4px (inputs)
-- **Shadows**: Tailwind shadow scale
+- **Shadows**: Tailwind shadow scale with custom elevation
 
 ### Component Library
-- Shadcn/ui components with Tailwind CSS
-- Supabase Auth UI components
-- React Hook Form for form handling
-- Tanstack Table for data grids
-- Radix UI primitives for accessibility
-- Framer Motion for animations
+- **Lexical**: Rich text editor for template editing
+- **Supabase Auth UI**: Authentication components
+- **Radix UI**: Accessible component primitives
+- **React Hook Form**: Form validation and handling
+- **Tanstack Table**: Data grids with virtual scrolling
+- **React Dropzone**: File upload with drag-and-drop
+- **Framer Motion**: Animations and transitions
+- **React Query**: Server state management
+- **Zustand**: Client state management
 
 ## User Journeys
 
@@ -99,31 +102,34 @@ Templates List → Select Template → Upload CSV → Map Columns → Generate A
 └────────────────────────────────────────────────────────┘
 ```
 
-### Template Editor
+### Template Editor (Lexical Rich Text)
 ```
 ┌────────────────────────────────────────────────────────┐
 │  ← Back   Template: {{templateName}}                  │
 │                                                        │
-│  [Save] [Preview] [Settings]           Auto-saved ✓   │
+│  [Save] [Preview] [Share] [Version History]  Saved ✓  │
 ├────────────────────────────────────────────────────────┤
 │                                    │ Variables (6)    │
 │  ┌──────────────────────────────┐ │ ┌──────────────┐ │
-│  │ Toolbar:                     │ │ │ {{bank_name}} │ │
-│  │ [B] [I] [U] | [{{}}] [🎨]   │ │ │ {{client}}    │ │
-│  ├──────────────────────────────┤ │ │ {{date}}      │ │
-│  │                              │ │ │ {{amount}}    │ │
-│  │ Loan Agreement               │ │ │ {{rate}}      │ │
+│  │ Format Toolbar:              │ │ │ {{bank_name}} │ │
+│  │ [B][I][U][S] | [H1][H2][H3] │ │ │ {{client}}    │ │
+│  │ [•][1.][☑] | [Link][Table]  │ │ │ {{date}}      │ │
+│  │ [{{}}Variable] [Find][Undo] │ │ │ {{amount}}    │ │
+│  ├──────────────────────────────┤ │ │ {{rate}}      │ │
 │  │                              │ │ │ {{due_date}}  │ │
-│  │ This agreement is between    │ │ └──────────────┘ │
+│  │ LOAN AGREEMENT               │ │ └──────────────┘ │
+│  │                              │ │                  │
+│  │ This agreement is between    │ │ [+ Add Variable] │
 │  │ {{bank_name}} and           │ │                  │
-│  │ {{client_name}} for a loan  │ │ [+ Add Variable] │
-│  │ amount of {{loan_amount}}.  │ │                  │
-│  │                              │ │ Variable Details:│
-│  │ Interest Rate: {{rate}}%    │ │ Name: bank_name  │
-│  │ Due Date: {{due_date}}      │ │ Type: Text       │
-│  │                              │ │ Required: Yes    │
-│  │ [Type to continue...]        │ │ Default: ""      │
+│  │ {{client_name}} for a loan  │ │ Variable Details:│
+│  │ amount of {{loan_amount}}.  │ │ Name: bank_name  │
+│  │                              │ │ Type: Text       │
+│  │ • Interest: {{rate}}%       │ │ Required: ✓      │
+│  │ • Due Date: {{due_date}}    │ │ Default: ""      │
+│  │                              │ │ Validation: None │
+│  │ [Type to continue...]        │ │ [Edit][Delete]   │
 │  └──────────────────────────────┘ └──────────────────┘
+│  Collaborators: • You (editing) • Sarah (viewing)     │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -310,16 +316,185 @@ Templates List → Select Template → Upload CSV → Map Columns → Generate A
 
 ## Performance Optimizations
 
-### Frontend
-- Code splitting by route
-- Lazy loading for modals
-- Image optimization
-- Virtual scrolling for lists
-- React Query for caching
+### Frontend Performance
+- Code splitting by route (target < 100KB initial bundle)
+- Lazy loading for Lexical editor and modals
+- Image optimization with WebP/AVIF
+- Virtual scrolling for template lists > 50 items
+- React Query with 5-minute cache
+- Service Worker for offline support
 
-### UX Optimizations
-- Optimistic UI updates
-- Auto-save in editor
-- Debounced search
-- Pagination for lists
-- Progressive enhancement
+### UX Optimizations  
+- Optimistic UI updates for all mutations
+- Auto-save every 30 seconds (debounced)
+- Debounced search with 300ms delay
+- Infinite scroll pagination
+- Progressive enhancement for JS-disabled
+- Skeleton loaders for all async content
+
+## Real-time Collaboration Features
+
+### Presence System
+```
+┌────────────────────────────────────────┐
+│ Active Collaborators (3)               │
+├────────────────────────────────────────┤
+│ • John (editing line 5) [Blue cursor]  │
+│ • Sarah (selecting text) [Green]       │
+│ • Mike (viewing) [Gray - idle 2min]    │
+└────────────────────────────────────────┘
+```
+
+### Conflict Resolution
+```
+┌────────────────────────────────────────┐
+│ ⚠️ Merge Conflict Detected             │
+├────────────────────────────────────────┤
+│ Your version:                          │
+│ "The payment is due on {{date}}"       │
+│                                        │
+│ Sarah's version (2 sec ago):          │
+│ "Payment must be received by {{date}}" │
+│                                        │
+│ [Use Mine] [Use Theirs] [Merge Both]  │
+└────────────────────────────────────────┘
+```
+
+### Live Cursor Tracking
+- Colored cursors for each user
+- Name labels on hover
+- Selection highlighting
+- Typing indicators
+- Idle state after 1 minute
+
+## Template Marketplace UI
+
+### Browse Templates
+```
+┌────────────────────────────────────────────────────┐
+│ Template Marketplace    [Search...] [Filter ▼]     │
+├────────────────────────────────────────────────────┤
+│ Categories: [All][Legal][Sales][HR][Finance][Tech] │
+│                                                    │
+│ Featured Templates                      Sort: Popular ▼│
+│ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │
+│ │    📄       │ │    📄       │ │    📄       │ │
+│ │  ⭐ 4.9     │ │  ⭐ 4.8     │ │  ⭐ 4.7     │ │
+│ │             │ │             │ │             │ │
+│ │ NDA Template│ │ Invoice Pro │ │ Contract    │ │
+│ │             │ │             │ │ Builder     │ │
+│ │ by LegalCo  │ │ by FinanceX │ │ by DocMaster│ │
+│ │             │ │             │ │             │ │
+│ │ 2.3k uses   │ │ 1.8k uses   │ │ 956 uses    │ │
+│ │ 12 variables│ │ 8 variables │ │ 15 variables│ │
+│ │             │ │             │ │             │ │
+│ │ [Preview]   │ │ [Preview]   │ │ [Preview]   │ │
+│ │ [Use Now]   │ │ [Use Now]   │ │ [Use Now]   │ │
+│ └─────────────┘ └─────────────┘ └─────────────┘ │
+└────────────────────────────────────────────────────┘
+```
+
+### Template Details Modal
+```
+┌────────────────────────────────────────────────────┐
+│ NDA Template                                   [X] │
+├────────────────────────────────────────────────────┤
+│ By: LegalCo  |  ⭐ 4.9 (234 reviews)  |  2.3k uses│
+│                                                    │
+│ Description:                                      │
+│ Professional NDA template with customizable       │
+│ clauses for various business scenarios.           │
+│                                                    │
+│ Variables (12):                                   │
+│ • company_name     • confidential_period          │
+│ • party_name       • governing_law                │
+│ • effective_date   • signature_fields             │
+│                                                    │
+│ Preview:                                          │
+│ ┌────────────────────────────────────────┐       │
+│ │ NON-DISCLOSURE AGREEMENT                │       │
+│ │                                         │       │
+│ │ This Agreement is entered into...       │       │
+│ └────────────────────────────────────────┘       │
+│                                                    │
+│ Reviews:                                          │
+│ ★★★★★ "Perfect for our needs" - John D.          │
+│ ★★★★☆ "Good but needs more options" - Sarah M.   │
+│                                                    │
+│ [Use This Template] [Download Sample]             │
+└────────────────────────────────────────────────────┘
+```
+
+## Advanced Features UI
+
+### Version History
+```
+┌────────────────────────────────────────────────────┐
+│ Version History: Loan Agreement                    │
+├────────────────────────────────────────────────────┤
+│ Current Version (v5) - 2 hours ago                │
+│ └─ Added new payment terms section                │
+│                                                    │
+│ v4 - Yesterday at 3:45 PM                         │
+│ └─ Updated interest rate variables                │
+│                                                    │
+│ v3 - 3 days ago                                   │
+│ └─ Fixed formatting issues                        │
+│                                                    │
+│ v2 - 1 week ago                                   │
+│ └─ Added bulk generation support                  │
+│                                                    │
+│ v1 - 2 weeks ago                                  │
+│ └─ Initial template creation                      │
+│                                                    │
+│ [Compare Versions] [Restore Version]              │
+└────────────────────────────────────────────────────┘
+```
+
+### Analytics Dashboard
+```
+┌────────────────────────────────────────────────────┐
+│ Template Analytics                                 │
+├────────────────────────────────────────────────────┤
+│ Usage Statistics (Last 30 days)                   │
+│                                                    │
+│ Total Generations: 156                            │
+│ Unique Users: 23                                  │
+│ Average Variables Filled: 8/12                    │
+│                                                    │
+│ Generation Trend:                                 │
+│ ▁▂▃▄▅▆▇█▇▆▅▄▃▂▁ (Daily)                         │
+│                                                    │
+│ Most Used Variables:                              │
+│ 1. company_name (156 times)                       │
+│ 2. client_name (156 times)                        │
+│ 3. amount (145 times)                             │
+│                                                    │
+│ Export Formats:                                   │
+│ PDF: 78%  |  DOCX: 22%                           │
+│                                                    │
+│ [Export Report] [Download Data]                   │
+└────────────────────────────────────────────────────┘
+```
+
+## Technical Implementation Notes
+
+### Frontend Architecture
+- React 18.3 with TypeScript 5.6
+- Vite 5.4 for build tooling
+- Lexical for rich text editing
+- Supabase Realtime for WebSocket
+- Tailwind CSS for styling
+
+### State Management
+- Zustand for global client state
+- React Query for server state
+- Lexical internal state for editor
+- Context API for theme/auth
+
+### Performance Metrics
+- First Contentful Paint: < 1.5s
+- Time to Interactive: < 3.5s  
+- Largest Contentful Paint: < 2.5s
+- Cumulative Layout Shift: < 0.1
+- First Input Delay: < 100ms
