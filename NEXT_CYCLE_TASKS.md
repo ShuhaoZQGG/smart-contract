@@ -1,72 +1,69 @@
-# Next Cycle Tasks
+# Next Cycle Tasks - Cycle 2
 
-## Priority 1: UI Integration (Critical)
-- [ ] Connect documentGenerator utilities to UI components
-- [ ] Implement real-time template editor with variable highlighting
-- [ ] Add file upload for DOCX/PDF templates
-- [ ] Create download functionality for generated documents
-- [ ] Wire up the existing UI components with backend utilities
+## Priority 1: Real-time Collaboration (Week 1-2)
+- [ ] Implement Supabase Realtime channels for template editing
+- [ ] Add presence indicators showing active users
+- [ ] Implement cursor sharing and selection highlighting
+- [ ] Build conflict resolution for simultaneous edits
+- [ ] Add commenting system on templates
+- [ ] Create collaboration permission management
 
-## Priority 2: User Experience Enhancements
-- [ ] Add user dashboard with template library
-- [ ] Implement template search and filtering
-- [ ] Create analytics dashboard for generation statistics
-- [ ] Add template versioning UI
-- [ ] Implement toast notifications for user feedback
+## Priority 2: Template Marketplace (Week 3-4)
+- [ ] Design and implement marketplace database schema
+- [ ] Build public template gallery with search/filter
+- [ ] Implement rating and review system
+- [ ] Add categories and tags for templates
+- [ ] Create import/export functionality
+- [ ] Build usage analytics for template publishers
+- [ ] Implement featured templates section
 
-## Priority 3: Performance Optimization
-- [ ] Add indexes for unindexed foreign keys:
-  - `generated_documents.template_version_id`
-  - `template_versions.created_by`
-- [ ] Clean up unused indexes once usage patterns are established
-- [ ] Optimize RLS policies if performance issues arise
+## Priority 3: Advanced Variable System (Week 5)
+- [ ] Add dropdown/select variable type
+- [ ] Implement date picker variables
+- [ ] Create calculated/formula variables
+- [ ] Add conditional content blocks
+- [ ] Implement variable validation rules
+- [ ] Build default values system
+- [ ] Add variable dependency management
 
-## Technical Improvements
-- [ ] Add integration tests for end-to-end workflows
-- [ ] Create comprehensive documentation with usage examples
-- [ ] Implement proper error boundaries
-- [ ] Add logging and monitoring
+## Priority 4: Performance & Quality (Week 6)
+- [ ] Further optimize bundle size to <100KB (current: 106KB)
+- [ ] Implement comprehensive E2E testing
+- [ ] Add performance monitoring (Web Vitals)
+- [ ] Create API documentation for Edge Functions
+- [ ] Implement error tracking (Sentry)
+- [ ] Add user analytics (Mixpanel/Amplitude)
 
-## Feature Enhancements
-- [ ] Template marketplace features
-  - Public template sharing
-  - Template categories and tags
-  - Usage analytics and ratings
-- [ ] Collaboration features for team templates
-- [ ] Real-time editing with WebSocket support
-- [ ] Template preview with sample data
+## Technical Debt from Cycle 1
+- [ ] Clean up 13 unused database indexes (INFO level)
+- [ ] Document Edge Functions API endpoints
+- [ ] Add missing E2E tests for critical flows
+- [ ] Complete bundle optimization (6KB remaining to target)
 
-## Advanced Features (Future)
-- [ ] Variable validation rules (regex, required, etc.)
-- [ ] Custom formatting options for variables
-- [ ] Template sharing and permissions system
-- [ ] Export to multiple formats simultaneously
-- [ ] Batch processing progress notifications
-- [ ] OAuth integration (Google, Microsoft)
-- [ ] Template approval workflows
+## Infrastructure Enhancements
+- [ ] Set up CI/CD pipeline with GitHub Actions
+- [ ] Implement automated testing on PR
+- [ ] Add staging environment on Supabase
+- [ ] Configure monitoring and alerting
+- [ ] Set up automated backups
 
-## Priority 0: Performance Optimizations (From Cycle 1 Review)
-- [ ] Optimize RLS policies using `(select auth.uid())` pattern
-  - Fix 6 auth function re-evaluations in template_shares and bulk_generations tables
-- [ ] Add indexes for unindexed foreign keys when usage patterns emerge
-- [ ] Close PR #12 (superseded by PR #13)
+## Completed in Cycle 1 ✅
+- ✅ Lexical rich text editor integrated
+- ✅ Variable insertion with {{syntax}} support
+- ✅ Auto-save at 30-second intervals
+- ✅ RLS performance issues fixed
+- ✅ Missing indexes added for foreign keys
+- ✅ Bundle size reduced 80% (546KB → 106KB)
+- ✅ 49 tests passing with comprehensive coverage
+- ✅ All core document generation features
+- ✅ PR #17 successfully merged
 
-## Priority 1: Real-Time Collaboration Features (Cycle 2 Focus)
-- [ ] Integrate rich text editor (Lexical or Slate.js)
-- [ ] Implement WebSocket support for real-time editing
-- [ ] Add presence indicators for collaborative editing
-- [ ] Create conflict resolution for simultaneous edits
-- [ ] Build template marketplace MVP
-
-## Notes from Cycle 1 Review
-- ✅ Core document generation features are complete and tested
-- ✅ 49 tests passing, build successful
-- ✅ No security vulnerabilities detected
-- ✅ Backend infrastructure is solid
-- ✅ Code splitting reduced bundle size by 80% (546KB → 106KB)
-- ✅ PR #13 merged successfully
-- 🎯 Focus for Cycle 2: Real-time collaboration and rich text editing
+## Notes
+- All features should maintain backward compatibility
+- Focus on user experience and performance
+- Ensure all new features have proper test coverage
+- Maintain WCAG 2.1 AA accessibility compliance
 
 ---
-*Updated after Cycle 1 PR #13 Review and Merge*
+*Updated after Cycle 1 PR #17 Review and Merge*
 *Date: 2025-09-02*
