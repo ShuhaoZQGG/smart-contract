@@ -71,7 +71,7 @@ const TemplateEditor: React.FC = () => {
   const extractVariables = (text: string): string[] => {
     const regex = /\{\{(\w+)\}\}/g
     const matches = text.match(regex) || []
-    return [...new Set(matches.map(m => m.replace(/\{\{|\}\}/g, '')))]
+    return Array.from(new Set(matches.map(m => m.replace(/\{\{|\}\}/g, ''))))
   }
 
   const insertVariable = () => {
