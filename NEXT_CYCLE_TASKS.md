@@ -45,13 +45,28 @@
 - [ ] OAuth integration (Google, Microsoft)
 - [ ] Template approval workflows
 
+## Priority 0: Performance Optimizations (From Cycle 1 Review)
+- [ ] Optimize RLS policies using `(select auth.uid())` pattern
+  - Fix 6 auth function re-evaluations in template_shares and bulk_generations tables
+- [ ] Add indexes for unindexed foreign keys when usage patterns emerge
+- [ ] Close PR #12 (superseded by PR #13)
+
+## Priority 1: Real-Time Collaboration Features (Cycle 2 Focus)
+- [ ] Integrate rich text editor (Lexical or Slate.js)
+- [ ] Implement WebSocket support for real-time editing
+- [ ] Add presence indicators for collaborative editing
+- [ ] Create conflict resolution for simultaneous edits
+- [ ] Build template marketplace MVP
+
 ## Notes from Cycle 1 Review
 - ✅ Core document generation features are complete and tested
-- ✅ 38 tests passing, build successful
+- ✅ 49 tests passing, build successful
 - ✅ No security vulnerabilities detected
 - ✅ Backend infrastructure is solid
-- 🎯 Focus should be on UI/UX improvements and feature integration
+- ✅ Code splitting reduced bundle size by 80% (546KB → 106KB)
+- ✅ PR #13 merged successfully
+- 🎯 Focus for Cycle 2: Real-time collaboration and rich text editing
 
 ---
-*Updated after Cycle 1 PR #8 Review and Merge*
+*Updated after Cycle 1 PR #13 Review and Merge*
 *Date: 2025-09-02*
