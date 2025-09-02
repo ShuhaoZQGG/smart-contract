@@ -1,7 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { ArrowLeft, Save, Eye, Settings, Plus, X } from 'lucide-react'
+import { LoadingSpinner } from '../components/AnimatedComponents'
+
+// Lazy load the Lexical editor for better performance
+const LexicalTemplateEditor = lazy(() => import('../components/LexicalTemplateEditor'))
 
 interface Variable {
   id?: string
