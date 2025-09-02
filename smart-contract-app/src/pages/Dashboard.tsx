@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { Plus, FileText, Upload, LogOut, Menu } from 'lucide-react'
+import { TemplateCardSkeleton } from '../components/SkeletonLoaders'
 
 interface Template {
   id: string
@@ -150,11 +151,10 @@ const Dashboard: React.FC = () => {
             </div>
             
             {loading ? (
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                </div>
+              <div className="grid grid-cols-1 gap-4">
+                <TemplateCardSkeleton />
+                <TemplateCardSkeleton />
+                <TemplateCardSkeleton />
               </div>
             ) : templates.length > 0 ? (
               <div className="bg-white rounded-lg shadow overflow-hidden">
