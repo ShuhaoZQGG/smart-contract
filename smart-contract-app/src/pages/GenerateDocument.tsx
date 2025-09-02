@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { ArrowLeft, Download, Eye, Upload } from 'lucide-react'
+import DocumentPreview from '../components/DocumentPreview'
 
 interface Variable {
   id: string

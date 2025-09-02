@@ -264,3 +264,23 @@ export const getMimeType = (extension: string): string => {
   
   return mimeTypes[extension.toLowerCase()] || 'application/octet-stream';
 };
+
+/**
+ * Process any document type and extract text content
+ */
+export const processDocument = async (file: File): Promise<string> => {
+  const fileExt = file.name.split('.').pop()?.toLowerCase();
+  
+  if (fileExt === 'docx') {
+    const result = await extractTextFromDocx(file);
+    return result.content || '';
+  } else if (fileExt === 'pdf') {
+    // For PDF, we would need to implement PDF text extraction
+    // For now, return a placeholder
+    return `Content from PDF: ${file.name}`;
+  } else if (fileExt === 'txt') {
+    return await file.text();
+  } else {
+    throw new Error(`Unsupported file type: ${fileExt}`);
+  }
+};

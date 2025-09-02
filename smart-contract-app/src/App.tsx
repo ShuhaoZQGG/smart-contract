@@ -8,6 +8,7 @@ import TemplateEditorEnhanced from './components/TemplateEditorEnhanced'
 import GenerateDocument from './pages/GenerateDocument'
 import BulkGenerator from './components/BulkGenerator'
 import TemplateLibrary from './pages/TemplateLibrary'
+import TemplateUpload from './pages/TemplateUpload'
 import Auth from './pages/Auth'
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -45,6 +46,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <TemplateLibrary />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/template/upload"
+              element={
+                <PrivateRoute>
+                  <TemplateUpload />
                 </PrivateRoute>
               }
             />

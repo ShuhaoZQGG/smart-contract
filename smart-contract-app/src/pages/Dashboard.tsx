@@ -45,41 +45,8 @@ const Dashboard: React.FC = () => {
     navigate('/')
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    try {
-      // Upload file to Supabase Storage
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${user?.id}/${Date.now()}.${fileExt}`
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('templates')
-        .upload(fileName, file)
-
-      if (uploadError) throw uploadError
-
-      // Create template record
-      const { data: templateData, error: templateError } = await supabase
-        .from('templates')
-        .insert({
-          name: file.name.replace(/\.[^/.]+$/, ''),
-          original_filename: file.name,
-          storage_path: uploadData.path,
-          file_type: fileExt,
-          user_id: user?.id,
-        })
-        .select()
-        .single()
-
-      if (templateError) throw templateError
-
-      // Navigate to template editor
-      navigate(`/template/${templateData.id}/edit`)
-    } catch (error) {
-      console.error('Error uploading file:', error)
-    }
+  const handleNewTemplate = () => {
+    navigate('/template/upload')
   }
 
   return (
@@ -141,18 +108,15 @@ const Dashboard: React.FC = () => {
           <div className="mb-8">
             <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <label className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer">
-                <input
-                  type="file"
-                  accept=".docx,.pdf"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                />
+              <button
+                onClick={handleNewTemplate}
+                className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition"
+              >
                 <div className="flex flex-col items-center">
                   <Plus className="h-12 w-12 text-primary mb-3" />
                   <span className="font-semibold">New Template</span>
                 </div>
-              </label>
+              </button>
               
               <Link
                 to="/templates"

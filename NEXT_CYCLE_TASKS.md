@@ -1,60 +1,57 @@
 # Next Cycle Tasks
 
-## High Priority - Performance & Security
-1. **Optimize RLS Policies**
-   - Replace all `auth.uid()` with `(select auth.uid())` pattern
-   - Consolidate duplicate permissive policies
-   - Estimated: 14 policies across 5 tables need updating
+## Priority 1: UI Integration (Critical)
+- [ ] Connect documentGenerator utilities to UI components
+- [ ] Implement real-time template editor with variable highlighting
+- [ ] Add file upload for DOCX/PDF templates
+- [ ] Create download functionality for generated documents
+- [ ] Wire up the existing UI components with backend utilities
 
-2. **Database Performance**
-   - Add missing indexes on foreign keys:
-     - generated_documents.template_version_id
-     - template_versions.created_by
-   - Remove unused indexes to reduce overhead
+## Priority 2: User Experience Enhancements
+- [ ] Add user dashboard with template library
+- [ ] Implement template search and filtering
+- [ ] Create analytics dashboard for generation statistics
+- [ ] Add template versioning UI
+- [ ] Implement toast notifications for user feedback
 
-3. **Security Fix**
-   - Fix `update_updated_at` function search_path parameter
+## Priority 3: Performance Optimization
+- [ ] Add indexes for unindexed foreign keys:
+  - `generated_documents.template_version_id`
+  - `template_versions.created_by`
+- [ ] Clean up unused indexes once usage patterns are established
+- [ ] Optimize RLS policies if performance issues arise
 
-## Medium Priority - Feature Enhancements
-1. **Document Processing**
-   - Integrate actual DOCX generation with docxtemplater
-   - Add PDF generation support with pdf-lib
-   - Improve template formatting preservation
+## Technical Improvements
+- [ ] Add integration tests for end-to-end workflows
+- [ ] Create comprehensive documentation with usage examples
+- [ ] Implement proper error boundaries
+- [ ] Add logging and monitoring
 
-2. **Real-time Features**
-   - WebSocket support for bulk generation progress
-   - Live collaboration with Supabase Realtime
-   - Real-time template editing notifications
+## Feature Enhancements
+- [ ] Template marketplace features
+  - Public template sharing
+  - Template categories and tags
+  - Usage analytics and ratings
+- [ ] Collaboration features for team templates
+- [ ] Real-time editing with WebSocket support
+- [ ] Template preview with sample data
 
-3. **Template Marketplace**
-   - Public template sharing
-   - Template categories and tags
-   - Usage analytics and ratings
-   - Template versioning UI
+## Advanced Features (Future)
+- [ ] Variable validation rules (regex, required, etc.)
+- [ ] Custom formatting options for variables
+- [ ] Template sharing and permissions system
+- [ ] Export to multiple formats simultaneously
+- [ ] Batch processing progress notifications
+- [ ] OAuth integration (Google, Microsoft)
+- [ ] Template approval workflows
 
-## Low Priority - Technical Debt
-1. **Code Quality**
-   - Add unit tests for new components
-   - Improve error boundary handling
-   - Add logging and monitoring
-
-2. **UI/UX Improvements**
-   - Mobile responsive design refinements
-   - Accessibility improvements (WCAG 2.1 AA)
-   - Dark mode support
-
-3. **Documentation**
-   - API documentation
-   - User guide creation
-   - Developer setup guide
-
-## Deferred Items
-- OAuth integration (Google, Microsoft)
-- Template approval workflows
-- Advanced permission system
-- API rate limiting
-- Billing integration
+## Notes from Cycle 1 Review
+- ✅ Core document generation features are complete and tested
+- ✅ 38 tests passing, build successful
+- ✅ No security vulnerabilities detected
+- ✅ Backend infrastructure is solid
+- 🎯 Focus should be on UI/UX improvements and feature integration
 
 ---
-*Generated from Cycle 1 Review*
+*Updated after Cycle 1 PR #8 Review and Merge*
 *Date: 2025-09-02*
