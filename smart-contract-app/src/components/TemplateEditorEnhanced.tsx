@@ -45,7 +45,7 @@ const TemplateEditorEnhanced: React.FC = () => {
     if (content !== originalContent && content.length > 0) {
       const timer = setTimeout(() => {
         handleSave(true);
-      }, 5000); // Auto-save after 5 seconds of inactivity
+      }, 30000); // Auto-save after 30 seconds of inactivity
       setAutoSaveTimer(timer);
     }
 
