@@ -5,7 +5,7 @@ Clean, intuitive interface prioritizing efficiency and user productivity. Materi
 
 ## Color Palette
 - **Primary**: #2563EB (Blue 600) - Actions, CTAs
-- **Secondary**: #7C3AED (Purple 600) - Variables, highlights
+- **Secondary**: #7C3AED (Purple 600) - Variables, highlights  
 - **Success**: #16A34A (Green 600) - Confirmations
 - **Warning**: #EA580C (Orange 600) - Alerts
 - **Error**: #DC2626 (Red 600) - Errors
@@ -14,7 +14,7 @@ Clean, intuitive interface prioritizing efficiency and user productivity. Materi
 
 ## Typography
 - **Headings**: Inter, system-ui
-- **Body**: Inter, system-ui
+- **Body**: Inter, system-ui  
 - **Code/Variables**: JetBrains Mono, monospace
 - **Sizes**: 14px base, 1.5 line-height
 
@@ -198,7 +198,7 @@ Select Template → Upload CSV → Map Columns → Preview Sample → Generate B
 - Focus indicators visible
 - Shortcuts: Ctrl+S (Save), Ctrl+P (Preview), Ctrl+Shift+V (Insert Variable)
 
-### Screen Reader Support
+### Screen Reader Support  
 - ARIA labels on all interactive elements
 - Live regions for status updates
 - Semantic HTML structure
