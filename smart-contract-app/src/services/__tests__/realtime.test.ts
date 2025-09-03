@@ -1,8 +1,6 @@
-import { realtimeService, CollaborationEdit } from '../realtime';
-
-// Mock Supabase
+// Create mock channel before anything else
 const mockChannel = {
-  on: jest.fn().mockReturnThis(),
+  on: jest.fn(),
   subscribe: jest.fn(),
   track: jest.fn(),
   untrack: jest.fn(),
@@ -10,14 +8,21 @@ const mockChannel = {
   presenceState: jest.fn(),
 };
 
-const mockSupabase = {
-  channel: jest.fn(() => mockChannel),
-  removeChannel: jest.fn(),
-};
+// Make on() chainable
+mockChannel.on.mockReturnValue(mockChannel);
 
+// Mock the supabase module
 jest.mock('../../lib/supabase', () => ({
-  supabase: mockSupabase,
+  supabase: {
+    channel: jest.fn(() => mockChannel),
+    removeChannel: jest.fn(),
+  },
 }));
+
+import { realtimeService, CollaborationEdit } from '../realtime';
+
+// Get the mocked supabase for assertions
+const mockSupabase = require('../../lib/supabase').supabase;
 
 describe('RealtimeCollaborationService', () => {
   beforeEach(() => {
