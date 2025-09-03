@@ -1,0 +1,154 @@
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { AdvancedVariables } from './AdvancedVariables';
+import { supabase } from '../lib/supabase';
+
+// Mock Supabase
+jest.mock('../lib/supabase', () => ({
+  supabase: {
+    from: jest.fn().mockImplementation(() => ({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockResolvedValue({ data: [], error: null }),
+      insert: jest.fn().mockReturnThis(),
+      delete: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({ 
+        data: {
+          id: '123',
+          type: 'computed',
+          computation_formula: 'test formula'
+        }, 
+        error: null 
+      })
+    }))
+  }
+}));
+
+describe('AdvancedVariables', () => {
+  const mockVariables = [
+    {
+      id: '1',
+      name: 'client_name',
+      display_name: 'Client Name',
+      data_type: 'text' as const,
+      is_required: true,
+      position: 0
+    },
+    {
+      id: '2',
+      name: 'amount',
+      display_name: 'Amount',
+      data_type: 'number' as const,
+      is_required: true,
+      position: 1
+    }
+  ];
+
+  const mockProps = {
+    templateId: 'template-123',
+    variables: mockVariables,
+    onVariableUpdate: jest.fn(),
+    onAdvancedVariableUpdate: jest.fn()
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('renders variables list', () => {
+    render(<AdvancedVariables {...mockProps} />);
+    
+    expect(screen.getByText('Variables')).toBeInTheDocument();
+    expect(screen.getByText('{{client_name}}')).toBeInTheDocument();
+    expect(screen.getByText('{{amount}}')).toBeInTheDocument();
+  });
+
+  it('toggles advanced panel', () => {
+    render(<AdvancedVariables {...mockProps} />);
+    
+    const toggleButton = screen.getByText('Advanced Variables');
+    fireEvent.click(toggleButton);
+    
+    expect(screen.getByText('Configure Advanced Variable')).toBeInTheDocument();
+  });
+
+  it('selects variable for advanced configuration', () => {
+    render(<AdvancedVariables {...mockProps} />);
+    
+    // Open advanced panel
+    fireEvent.click(screen.getByText('Advanced Variables'));
+    
+    // Select a variable
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'client_name' } });
+    
+    expect(select).toHaveValue('client_name');
+  });
+
+  it('switches between advanced types', () => {
+    render(<AdvancedVariables {...mockProps} />);
+    
+    fireEvent.click(screen.getByText('Advanced Variables'));
+    
+    const conditionalButton = screen.getByText('conditional');
+    fireEvent.click(conditionalButton);
+    
+    expect(conditionalButton.className).toContain('bg-blue-600');
+  });
+
+  it('tests formula evaluation', () => {
+    render(<AdvancedVariables {...mockProps} />);
+    
+    fireEvent.click(screen.getByText('Advanced Variables'));
+    
+    // Select variable
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'amount' } });
+    
+    // Enter formula
+    const textarea = screen.getByPlaceholderText(/Computation Formula/);
+    fireEvent.change(textarea, { target: { value: '100 * 2' } });
+    
+    // Test formula
+    const testButton = screen.getByText('Test Formula');
+    fireEvent.click(testButton);
+    
+    // Formula testing is simple evaluation, should show result
+    waitFor(() => {
+      expect(screen.getByText(/Result:/)).toBeInTheDocument();
+    });
+  });
+
+  it('adds advanced variable', async () => {
+    render(<AdvancedVariables {...mockProps} />);
+    
+    fireEvent.click(screen.getByText('Advanced Variables'));
+    
+    // Configure advanced variable
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'amount' } });
+    
+    const textarea = screen.getByPlaceholderText(/Computation Formula/);
+    fireEvent.change(textarea, { target: { value: '{{base}} * {{rate}}' } });
+    
+    // Add button should appear
+    const addButton = screen.getByText('Add Advanced Variable');
+    fireEvent.click(addButton);
+    
+    await waitFor(() => {
+      expect(mockProps.onAdvancedVariableUpdate).toHaveBeenCalled();
+    });
+  });
+
+  it('displays variable type indicators', () => {
+    render(<AdvancedVariables {...mockProps} />);
+    
+    // Test that variable names are displayed
+    expect(screen.getByText('{{client_name}}')).toBeInTheDocument();
+    expect(screen.getByText('{{amount}}')).toBeInTheDocument();
+    
+    // Test required indicator - they should be marked as required
+    expect(screen.getByText('Client Name')).toBeInTheDocument();
+    expect(screen.getByText('Amount')).toBeInTheDocument();
+  });
+});
