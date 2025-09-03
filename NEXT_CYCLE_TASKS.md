@@ -1,5 +1,11 @@
 # Next Cycle Tasks - Cycle 2
 
+## Security & Compliance (IMMEDIATE)
+- [ ] **Enable leaked password protection** in Supabase Auth (HaveIBeenPwned)
+- [ ] **Configure additional MFA options** (TOTP, SMS)
+- [ ] Review and implement OWASP security best practices
+- [ ] Set up security monitoring and alerts
+
 ## Priority 1: Real-time Collaboration (Week 1-2)
 - [ ] Implement Supabase Realtime channels for template editing
 - [ ] Add presence indicators showing active users
@@ -35,7 +41,7 @@
 - [ ] Add user analytics (Mixpanel/Amplitude)
 
 ## Technical Debt from Cycle 1
-- [ ] Clean up 13 unused database indexes (INFO level)
+- [ ] Monitor and potentially remove 12 unused database indexes after 30 days
 - [ ] Document Edge Functions API endpoints
 - [ ] Add missing E2E tests for critical flows
 - [ ] Complete bundle optimization (6KB remaining to target)
@@ -66,4 +72,5 @@
 
 ---
 *Updated after Cycle 1 PR #17 Review and Merge*
-*Date: 2025-09-02*
+*Date: 2025-09-03*
+*PR #17 Status: Already merged to main - no additional action needed*
