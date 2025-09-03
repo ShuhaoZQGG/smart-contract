@@ -43,10 +43,23 @@ export async function getAuthSecurityConfig(): Promise<AuthSecurityConfig> {
 /**
  * Configure Multi-Factor Authentication for user
  */
-export async function configureMFA(type: 'totp' | 'sms') {
-  const { data, error } = await supabase.auth.mfa.enroll({
-    factorType: type,
-  });
+export async function configureMFA(type: 'totp' | 'sms', phone?: string) {
+  let data, error;
+  
+  if (type === 'sms' && phone) {
+    const result = await supabase.auth.mfa.enroll({
+      factorType: 'phone',
+      phone,
+    });
+    data = result.data;
+    error = result.error;
+  } else {
+    const result = await supabase.auth.mfa.enroll({
+      factorType: 'totp',
+    });
+    data = result.data;
+    error = result.error;
+  }
 
   if (error) {
     throw new Error(`Failed to enroll MFA: ${error.message}`);

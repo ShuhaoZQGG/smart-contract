@@ -37,10 +37,10 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({ userId }) => {
     }
   };
 
-  const handleEnableMFA = async (type: 'totp' | 'sms') => {
+  const handleEnableMFA = async (type: 'totp' | 'sms', phone?: string) => {
     try {
       setMfaStatus('Enrolling...');
-      await configureMFA(type);
+      await configureMFA(type, phone);
       setMfaStatus(`${type.toUpperCase()} MFA enabled successfully!`);
     } catch (error) {
       setMfaStatus(`Failed to enable MFA: ${error}`);
@@ -92,7 +92,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({ userId }) => {
             <span>Leaked Password Protection: {config?.leakedPasswordProtection ? 'Enabled' : 'Disabled'}</span>
           </div>
           <div className="flex items-center">
-            {config?.enabledMfaMethods.length > 1 ? (
+            {config?.enabledMfaMethods && config.enabledMfaMethods.length > 1 ? (
               <CheckCircle className="mr-2 text-green-500" size={16} />
             ) : (
               <AlertCircle className="mr-2 text-yellow-500" size={16} />
@@ -119,7 +119,12 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({ userId }) => {
             Enable TOTP (Authenticator App)
           </button>
           <button
-            onClick={() => handleEnableMFA('sms')}
+            onClick={() => {
+              const phone = window.prompt('Enter your phone number (with country code):');
+              if (phone) {
+                handleEnableMFA('sms', phone);
+              }
+            }}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Enable SMS

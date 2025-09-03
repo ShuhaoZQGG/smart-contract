@@ -66,21 +66,26 @@ describe('SecuritySettings Component', () => {
     fireEvent.click(totpButton);
     
     await waitFor(() => {
-      expect(authConfig.configureMFA).toHaveBeenCalledWith('totp');
+      expect(authConfig.configureMFA).toHaveBeenCalledWith('totp', undefined);
       expect(screen.getByText(/TOTP MFA enabled successfully!/)).toBeInTheDocument();
     });
   });
 
   it('enables SMS MFA when button is clicked', async () => {
+    // Mock window.prompt to return a phone number
+    const mockPrompt = jest.spyOn(window, 'prompt').mockReturnValue('+1234567890');
+    
     render(<SecuritySettings userId={mockUserId} />);
     
     const smsButton = await screen.findByText('Enable SMS');
     fireEvent.click(smsButton);
     
     await waitFor(() => {
-      expect(authConfig.configureMFA).toHaveBeenCalledWith('sms');
+      expect(authConfig.configureMFA).toHaveBeenCalledWith('sms', '+1234567890');
       expect(screen.getByText(/SMS MFA enabled successfully!/)).toBeInTheDocument();
     });
+    
+    mockPrompt.mockRestore();
   });
 
   it('generates backup codes when button is clicked', async () => {
