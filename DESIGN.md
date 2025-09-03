@@ -1,62 +1,53 @@
-# Smart Contract Document Template System - UI/UX Design Specifications
+# Smart Contract - UI/UX Design Specifications
 
-## Design Philosophy
-Clean, intuitive interface prioritizing efficiency and user productivity. Material Design 3 principles with focus on accessibility and responsive design.
+## Design System
 
-## Color Palette
-- **Primary**: #2563EB (Blue 600) - Actions, CTAs
-- **Secondary**: #7C3AED (Purple 600) - Variables, highlights  
-- **Success**: #16A34A (Green 600) - Confirmations
-- **Warning**: #EA580C (Orange 600) - Alerts
-- **Error**: #DC2626 (Red 600) - Errors
-- **Background**: #FFFFFF / #111827 (Dark mode)
-- **Surface**: #F9FAFB / #1F2937 (Dark mode)
+### Brand Identity
+- **Primary Color**: #2563EB (Blue-600)
+- **Secondary Color**: #10B981 (Emerald-500)
+- **Accent Color**: #F59E0B (Amber-500)
+- **Typography**: Inter for UI, Monaco for code/variables
+- **Icons**: Lucide React icon set
 
-## Typography
-- **Headings**: Inter, system-ui
-- **Body**: Inter, system-ui  
-- **Code/Variables**: JetBrains Mono, monospace
-- **Sizes**: 14px base, 1.5 line-height
+### Material Design 3 Principles
+- Dynamic color theming with light/dark modes
+- Elevation through subtle shadows and layering
+- Rounded corners (8px default, 12px for cards)
+- Responsive grid: 4/8/12 columns
 
-## Component Library
-Leverage Supabase Auth UI components + shadcn/ui for consistency with backend.
-
-## User Journeys
+## Core User Journeys
 
 ### 1. First-Time User Flow
 ```
-Landing → Sign Up (Supabase Auth) → Onboarding Tutorial → Dashboard → Create First Template
+Landing → Sign Up → Onboarding Tutorial → Create First Template → Success
 ```
-- Welcome modal with 3-step interactive tutorial
-- Sample template pre-loaded for exploration
-- Tooltips on first interaction with features
+- Progressive disclosure of features
+- Interactive tutorial with sample template
+- Quick win: Generate first document in <3 minutes
 
 ### 2. Template Creation Flow
 ```
-Upload Document → Visual Editor → Insert Variables → Configure Settings → Save Template
+Upload Document → Extract Content → Insert Variables → Configure Settings → Save Template
 ```
-- Drag-drop upload zone with format indicators
-- Live preview panel beside editor
-- Variable insertion via toolbar button or {{shortcut}}
-- Auto-save indicator with 30s intervals
+- Drag-and-drop upload with format validation
+- Visual variable insertion with syntax highlighting
+- Auto-save every 30 seconds
 
 ### 3. Document Generation Flow
 ```
 Select Template → Fill Variables → Preview → Generate → Download
 ```
-- Template gallery with search/filter
-- Dynamic form generation from variables
-- Side-by-side preview of changes
-- Multi-format export options
+- Form validation with helpful error messages
+- Real-time preview updates
+- Multiple export formats (PDF/DOCX)
 
 ### 4. Bulk Generation Flow
 ```
-Select Template → Upload CSV → Map Columns → Preview Sample → Generate Batch → Download ZIP
+Select Template → Upload CSV → Map Columns → Preview Sample → Generate All → Download ZIP
 ```
 - CSV template download option
-- Visual column mapping interface
-- Progress bar with real-time updates
-- Error handling with retry options
+- Column auto-mapping with manual override
+- Progress indicator with estimated time
 
 ## Page Layouts
 
@@ -84,318 +75,321 @@ Select Template → Upload CSV → Map Columns → Preview Sample → Generate B
 
 ### Template Editor
 ```
-┌─────────────────────────────────────────────────────┐
-│ [← Back] Template: {{template_name}}  [Save] [Preview] │
-├─────────────────────────────────────────────────────┤
-│ Toolbar: [B][I][U] | [{{}}] [Link] [List] | [Undo][Redo] │
-├──────────────────────────┬──────────────────────────┤
-│                          │ Variables ({{count}})    │
-│                          │ ┌──────────────────────┐ │
-│   Rich Text Editor       │ │ client_name         │ │
-│   (Lexical)              │ │ agreement_date      │ │
-│                          │ │ loan_amount         │ │
-│   Variable highlighting  │ │ [+ Add Variable]    │ │
-│   Live formatting        │ └──────────────────────┘ │
-│                          │                          │
-│                          │ Variable Settings       │
-│                          │ ┌──────────────────────┐ │
-│                          │ │ Name: client_name   │ │
-│                          │ │ Type: [Text ▼]      │ │
-│                          │ │ Required: [✓]       │ │
-│                          │ │ Default: ________   │ │
-│                          │ └──────────────────────┘ │
-└──────────────────────────┴──────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│ ← Back  Template: {{template_name}}  [Save] [Preview] │
+├─────────────────┬─────────────────────────────────────────┤
+│ Variables   │                                           │
+│             │  [Bold] [Italic] [List] [{{}}] [Undo]     │
+│ ┌─────────┐ │  ┌─────────────────────────────────────┐   │
+│ │client_   │ │  │                                   │   │
+│ │name     │ │  │ Service Agreement                 │   │
+│ │         │ │  │                                   │   │
+│ │company_ │ │  │ This agreement is between        │   │
+│ │name     │ │  │ {{client_name}} and              │   │
+│ │         │ │  │ {{company_name}}.                │   │
+│ │service_ │ │  │                                   │   │
+│ │date     │ │  │ Services begin on                │   │
+│ │         │ │  │ {{service_date}} for a          │   │
+│ │amount   │ │  │ total of {{amount}}.            │   │
+│ │         │ │  │                                   │   │
+│ │[+ Add]  │ │  └─────────────────────────────────────┘   │
+│ └─────────┘ │                                           │
+│             │  Formatting preserved from original       │
+│ Properties  │  Variable highlighting in blue           │
+│ ┌─────────┐ │  Auto-complete on {{ trigger            │
+│ │Format:  │ │                                           │
+│ │ DOCX    │ │  Collaborators (2 active) 🟢             │
+│ │Version: │ │  └─ John D. (editing)                    │
+│ │ 1.2     │ │  └─ Sarah M. (viewing)                   │
+│ └─────────┘ │                                           │
+└─────────────┴───────────────────────────────────────────┘
 ```
 
-### Document Generation
+### Generation Form
 ```
-┌─────────────────────────────────────────────────────┐
-│ Generate from: {{template_name}}                    │
-├──────────────────────────┬──────────────────────────┤
-│ Variable Input Form      │ Preview                  │
-│                          │                          │
-│ client_name *            │ Agreement between        │
-│ [___________________]    │ Acme Corp and           │
-│                          │ {{client_name}} for     │
-│ agreement_date *         │ services starting       │
-│ [📅 _______________]     │ {{agreement_date}}      │
-│                          │                          │
-│ loan_amount *            │ Total Amount:           │
-│ [$ _________________]    │ {{loan_amount}}         │
-│                          │                          │
-│ interest_rate            │ Interest Rate:          │
-│ [_____ %]                │ {{interest_rate}}%      │
-│                          │                          │
-│ [Generate PDF] [DOCX]    │ (Live preview updates)  │
-└──────────────────────────┴──────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│        Generate Document from Template                  │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Template: Employment Contract v2.1                    │
+│                                                         │
+│  Fill in the variables:                               │
+│                                                         │
+│  Client Name *                                         │
+│  ┌─────────────────────────────────────────────┐          │
+│  │ John Smith                              │          │
+│  └─────────────────────────────────────────────┘          │
+│                                                         │
+│  Company Name *                                        │
+│  ┌─────────────────────────────────────────────┐          │
+│  │ Acme Corporation                        │          │
+│  └─────────────────────────────────────────────┘          │
+│                                                         │
+│  Service Date *                                        │
+│  ┌─────────────────────────────────────────────┐          │
+│  │ 📅 2024-03-15                           │          │
+│  └─────────────────────────────────────────────┘          │
+│                                                         │
+│  Amount *                                              │
+│  ┌─────────────────────────────────────────────┐          │
+│  │ $ 50,000.00                             │          │
+│  └─────────────────────────────────────────────┘          │
+│                                                         │
+│  Output Format:  [●] PDF  [○] DOCX                    │
+│                                                         │
+│  [Preview Document]  [Generate & Download]             │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ### Template Marketplace
 ```
-┌─────────────────────────────────────────────────────┐
-│ Template Marketplace     [Search] [Filter] [Sort ▼] │
-├─────────────────────────────────────────────────────┤
-│ Categories: [All] [Legal] [Business] [Personal]     │
-│                                                      │
-│ ┌────────────┐ ┌────────────┐ ┌────────────┐       │
-│ │ NDA        │ │ Invoice    │ │ Contract   │       │
-│ │ ⭐ 4.8     │ │ ⭐ 4.9     │ │ ⭐ 4.7     │       │
-│ │ 1.2k uses  │ │ 3.4k uses  │ │ 890 uses   │       │
-│ │ [Free]     │ │ [$9.99]    │ │ [Free]     │       │
-│ └────────────┘ └────────────┘ └────────────┘       │
-│                                                      │
-│ [Load More...]                                       │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│              Template Marketplace                       │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  [Search templates...]  [Categories ▼]  [Sort by ▼]    │
+│                                                         │
+│  Featured Templates                                    │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐              │
+│  │    📄    │ │    📄    │ │    📄    │              │
+│  │  Legal   │ │ Business │ │ Personal │              │
+│  │ Contract │ │ Invoice  │ │  Resume  │              │
+│  │ ⭐ 4.8   │ │ ⭐ 4.9   │ │ ⭐ 4.7   │              │
+│  │ 2k uses  │ │ 5k uses  │ │ 1k uses  │              │
+│  │ [Clone]  │ │ [Clone]  │ │ [Clone]  │              │
+│  └──────────┘ └──────────┘ └──────────┘              │
+│                                                         │
+│  Browse by Category                                    │
+│  ┌─────────────────────────────────────────┐          │
+│  │ 📁 Legal (124)      📁 Business (89)   │          │
+│  │ 📁 Education (45)   📁 Personal (67)   │          │
+│  │ 📁 Healthcare (23)  📁 Real Estate (34) │          │
+│  └─────────────────────────────────────────┘          │
+└─────────────────────────────────────────────────────────┘
 ```
 
-## Mobile Responsive Design
+## Component Specifications
+
+### Navigation Bar
+- Fixed position with blur backdrop
+- User avatar with dropdown menu
+- Notification bell with badge counter
+- Search with command palette (Cmd+K)
+
+### Template Card
+```
+┌─────────────────────────┐
+│ [Icon] Template Name    │
+│ Last edited 2 hours ago │
+│ 5 variables · 3 pages   │
+│ [Edit] [Generate] [⋮]  │
+└─────────────────────────┘
+```
+
+### Variable Input Field
+- Label with asterisk for required fields
+- Placeholder text with example values
+- Error state with red border and message
+- Success state with green checkmark
+
+### Real-time Collaboration
+- Cursor positions with user colors
+- Presence avatars in editor header
+- "User is typing..." indicator
+- Conflict resolution dialog
+
+## Responsive Design
 
 ### Breakpoints
-- Mobile: 320px - 768px
-- Tablet: 768px - 1024px
-- Desktop: 1024px+
+- Mobile: 320-767px (single column)
+- Tablet: 768-1023px (2 columns)
+- Desktop: 1024-1439px (3 columns)
+- Wide: 1440px+ (4 columns)
 
-### Mobile Template Editor
-```
-┌─────────────┐
-│ [☰] [Save]  │
-├─────────────┤
-│ Editor      │
-│             │
-│ {{content}} │
-│             │
-├─────────────┤
-│ [{{}}] Variables │
-└─────────────┘
-```
-- Collapsible variable panel
-- Simplified toolbar
-- Touch-optimized controls
-
-### Mobile Generation Form
-```
-┌─────────────┐
-│ Template    │
-├─────────────┤
-│ Variables:  │
-│ ┌─────────┐ │
-│ │ Input 1 │ │
-│ │ Input 2 │ │
-│ └─────────┘ │
-│ [Generate]  │
-├─────────────┤
-│ [Preview]   │
-└─────────────┘
-```
-- Stacked layout
-- Expandable preview
-- Large touch targets
+### Mobile Adaptations
+- Bottom navigation bar
+- Full-screen modals
+- Swipe gestures for actions
+- Collapsed sidebar with hamburger menu
 
 ## Accessibility (WCAG 2.1 AA)
 
 ### Keyboard Navigation
-- Tab order logical flow
-- Focus indicators visible
-- Shortcuts: Ctrl+S (Save), Ctrl+P (Preview), Ctrl+Shift+V (Insert Variable)
+- Tab order follows visual hierarchy
+- Focus indicators on all interactive elements
+- Keyboard shortcuts with ? help modal
+- Escape key closes all modals
 
-### Screen Reader Support  
-- ARIA labels on all interactive elements
-- Live regions for status updates
-- Semantic HTML structure
+### Screen Reader Support
+- Semantic HTML5 elements
+- ARIA labels on icons and buttons
+- Live regions for dynamic content
+- Skip navigation links
 
 ### Visual Accessibility
-- Color contrast ratio ≥4.5:1 (text), ≥3:1 (UI)
-- Focus indicators ≥2px outline
-- Text resizable to 200% without loss
-- Dark mode support
+- 4.5:1 contrast ratio minimum
+- Resizable text up to 200%
+- No information by color alone
+- Reduced motion option
 
-## Real-time Collaboration UI
+## Performance Optimizations
 
-### Active Users Indicator
-```
-┌──────────────────────────┐
-│ Active Now (3)           │
-│ [●] John (editing)       │
-│ [●] Sarah (viewing)      │
-│ [●] Mike (commenting)    │
-└──────────────────────────┘
-```
+### Loading States
+- Skeleton screens for content
+- Progressive image loading
+- Optimistic UI updates
+- Staggered animations
 
-### Cursor Presence
-- Colored cursors for each user
-- Name labels on hover
-- Smooth position updates via WebSocket
+### Offline Support
+- Service worker for asset caching
+- IndexedDB for template storage
+- Queue for pending operations
+- Sync indicator in header
 
-### Conflict Resolution Modal
-```
-┌─────────────────────────────┐
-│ Merge Conflict              │
-├─────────────────────────────┤
-│ Your Version | Their Version│
-│ [Text A]     | [Text B]     │
-│                             │
-│ [Use Mine] [Use Theirs]     │
-│ [Merge Both]                │
-└─────────────────────────────┘
-```
+## Error Handling
 
-## Loading States & Feedback
-
-### Skeleton Loaders
-- Template cards: Animated placeholders
-- Editor: Progressive content loading
-- Forms: Field-by-field appearance
-
-### Progress Indicators
-- Document upload: Progress bar with percentage
-- Bulk generation: Item counter (3/10 completed)
-- Auto-save: Subtle spinner with "Saving..."
-
-### Toast Notifications
-```
-┌────────────────────────┐
-│ ✓ Template saved       │
-└────────────────────────┘
-```
-Position: Bottom-right
-Duration: 3s (success), 5s (error)
-Actions: Undo option where applicable
-
-## Error States
+### Error States
+- Inline validation messages
+- Toast notifications for actions
+- Full-page error boundaries
+- Retry mechanisms with exponential backoff
 
 ### Empty States
 ```
 ┌─────────────────────────┐
-│     No templates yet    │
+│                         │
 │         📄              │
-│  Create your first      │
-│  template to start      │
+│   No templates yet      │
+│                         │
+│ Create your first       │
+│ template to get started │
 │                         │
 │  [+ Create Template]    │
+│                         │
 └─────────────────────────┘
 ```
 
-### Error Messages
-- Field-level validation: Inline below input
-- Form errors: Summary at top
-- System errors: Modal with retry option
+## Animation & Micro-interactions
 
-## Performance Optimization
+### Transitions
+- Page transitions: 200ms ease-out
+- Modal fade-in: 150ms ease-in
+- Button hover: scale(1.02)
+- Card hover: translateY(-2px)
 
-### Lazy Loading
-- Route-based code splitting
-- Image lazy loading with blur-up
-- Infinite scroll for template gallery
-
-### Caching Strategy
-- Template metadata: 5 min cache
-- Generated documents: 24hr cache
-- User preferences: LocalStorage
-
-### Bundle Optimization
-- Target: <100KB initial load
-- Chunk vendors separately
-- Tree-shake unused components
-
-## Animation & Transitions
-
-### Micro-interactions
-- Button hover: Scale 1.05, 200ms ease
-- Variable insertion: Highlight pulse
-- Card hover: Subtle shadow elevation
-
-### Page Transitions
-- Route changes: Fade 300ms
-- Modal open: Scale + fade 200ms
-- Panel slides: Transform 250ms ease-out
-
-## Implementation Guidelines
-
-### Component Structure
-```typescript
-// Example component with accessibility
-<Button
-  onClick={handleGenerate}
-  aria-label="Generate document"
-  disabled={!isValid}
-  className="btn-primary"
->
-  <Icon name="generate" aria-hidden />
-  Generate
-</Button>
-```
-
-### State Management
-- Global: Zustand for user, templates
-- Server: React Query for API data
-- Local: useState for UI state
-- Forms: React Hook Form validation
-
-### Responsive Utilities
-```css
-/* Mobile-first approach */
-.container {
-  padding: 1rem;
-}
-@media (min-width: 768px) {
-  .container {
-    padding: 2rem;
-  }
-}
-```
-
-## Testing Requirements
-
-### Usability Testing
-- Task completion rate >95%
-- Time to first document <3 min
-- Error recovery success >90%
-
-### Performance Metrics
-- First Contentful Paint <1.2s
-- Time to Interactive <2.5s
-- Cumulative Layout Shift <0.1
-
-### Cross-browser Support
-- Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
-- Mobile: iOS Safari 14+, Chrome Android 90+
+### Feedback
+- Button click ripple effect
+- Drag-and-drop visual feedback
+- Progress bars for long operations
+- Success checkmarks with animation
 
 ## Integration Points
 
 ### Supabase Auth UI
-- Use @supabase/auth-ui-react components
-- Maintain consistent theming
-- Social login buttons prominent
+- Magic link authentication
+- Social login buttons (Google, GitHub)
+- Password strength indicator
+- MFA setup flow
 
-### Edge Functions
-- Loading states during processing
-- Error handling with user guidance
-- Progress tracking for long operations
+### File Upload
+- Drag-and-drop zone with dashed border
+- File type validation indicators
+- Upload progress with percentage
+- Thumbnail preview for documents
 
-### Real-time Updates
-- Visual indicators for live changes
-- Smooth transitions for content updates
-- Connection status indicator
+### Export Options
+- Format selection radio buttons
+- Quality settings for PDF
+- Email delivery option
+- Cloud storage integration buttons
 
-## Future Enhancements (Cycle 3+)
+## Future Enhancements (Cycle 2+)
 
 ### Advanced Features UI
-- Conditional logic builder (drag-drop)
+- Conditional variable logic builder
 - Formula editor with autocomplete
-- API integration wizard
 - Webhook configuration panel
+- API key management interface
 
-### Analytics Dashboard
-- Usage charts (Recharts)
-- Template performance metrics
-- Export analytics to CSV
-- Custom date range picker
+### Enterprise Dashboard
+- Team member management
+- Usage analytics charts
+- Billing and subscription UI
+- Audit log viewer
 
-### Team Management
-- Member invite flow
-- Permission matrix UI
-- Activity timeline
-- Quota usage indicators
+### AI Integration
+- Smart variable detection overlay
+- Content suggestions sidebar
+- Template recommendation cards
+- Auto-categorization interface
 
-## Design System Documentation
-Maintain Storybook with all components, states, and interactions documented for consistent implementation across the application.
+## Style Guide
+
+### Button Hierarchy
+1. Primary: Blue background, white text
+2. Secondary: Gray border, gray text
+3. Tertiary: No border, blue text
+4. Danger: Red background, white text
+
+### Form Elements
+- Input height: 40px
+- Border radius: 6px
+- Border color: #E5E7EB
+- Focus border: #2563EB
+
+### Typography Scale
+- H1: 32px, font-weight: 700
+- H2: 24px, font-weight: 600
+- H3: 20px, font-weight: 600
+- Body: 16px, font-weight: 400
+- Small: 14px, font-weight: 400
+
+### Spacing System
+- Base unit: 4px
+- Spacing scale: 4, 8, 12, 16, 24, 32, 48, 64
+
+## Implementation Notes
+
+### Frontend Stack
+- React 18.3 with TypeScript
+- Shadcn/ui component library
+- Tailwind CSS for styling
+- Lexical for rich text editing
+- Zustand for state management
+- React Query for server state
+
+### Component Structure
+```
+components/
+├── layout/
+│   ├── Navigation.tsx
+│   ├── Sidebar.tsx
+│   └── Footer.tsx
+├── templates/
+│   ├── TemplateCard.tsx
+│   ├── TemplateEditor.tsx
+│   └── VariablePanel.tsx
+├── generation/
+│   ├── GenerationForm.tsx
+│   ├── BulkUpload.tsx
+│   └── PreviewModal.tsx
+└── shared/
+    ├── Button.tsx
+    ├── Input.tsx
+    └── Modal.tsx
+```
+
+### Design Tokens
+```css
+:root {
+  --color-primary: #2563EB;
+  --color-secondary: #10B981;
+  --color-accent: #F59E0B;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+}
+```
