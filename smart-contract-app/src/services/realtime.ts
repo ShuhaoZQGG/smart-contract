@@ -159,23 +159,36 @@ class RealtimeCollaborationService {
 
   // Conflict resolution for simultaneous edits
   resolveConflict(localEdit: CollaborationEdit, remoteEdit: CollaborationEdit): CollaborationEdit[] {
-    // Simple operational transformation - last write wins with position adjustment
-    if (localEdit.timestamp > remoteEdit.timestamp) {
-      return [localEdit, remoteEdit];
-    }
+    // Create copies to avoid mutating original edits
+    const localCopy = { ...localEdit };
+    const remoteCopy = { ...remoteEdit };
     
-    // Adjust positions if edits overlap
-    if (remoteEdit.type === 'insert' && localEdit.position && remoteEdit.position) {
-      if (remoteEdit.position <= localEdit.position) {
-        localEdit.position += remoteEdit.length || 0;
+    // Adjust positions based on which edit came first
+    if (remoteCopy.timestamp < localCopy.timestamp) {
+      // Remote edit happened first, adjust local edit position
+      if (remoteCopy.type === 'insert' && localCopy.position && remoteCopy.position) {
+        if (remoteCopy.position <= localCopy.position) {
+          localCopy.position += remoteCopy.length || 0;
+        }
+      } else if (remoteCopy.type === 'delete' && localCopy.position && remoteCopy.position) {
+        if (remoteCopy.position < localCopy.position) {
+          localCopy.position = Math.max(0, localCopy.position - (remoteCopy.length || 0));
+        }
       }
-    } else if (remoteEdit.type === 'delete' && localEdit.position && remoteEdit.position) {
-      if (remoteEdit.position < localEdit.position) {
-        localEdit.position -= remoteEdit.length || 0;
+      return [remoteCopy, localCopy];
+    } else {
+      // Local edit happened first, adjust remote edit position
+      if (localCopy.type === 'insert' && remoteCopy.position && localCopy.position) {
+        if (localCopy.position <= remoteCopy.position) {
+          remoteCopy.position += localCopy.length || 0;
+        }
+      } else if (localCopy.type === 'delete' && remoteCopy.position && localCopy.position) {
+        if (localCopy.position < remoteCopy.position) {
+          remoteCopy.position = Math.max(0, remoteCopy.position - (localCopy.length || 0));
+        }
       }
+      return [localCopy, remoteCopy];
     }
-    
-    return [remoteEdit, localEdit];
   }
 
   // Get all active users in a template
