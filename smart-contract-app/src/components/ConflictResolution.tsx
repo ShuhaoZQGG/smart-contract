@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Check, X, Users, GitBranch, Clock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useYjsCollaboration } from '../hooks/useYjsCollaboration';
 
 interface Conflict {
   id: string;
@@ -35,11 +36,40 @@ export const ConflictResolution: React.FC<ConflictResolutionProps> = ({
   const [resolution, setResolution] = useState<'mine' | 'theirs' | 'merge'>('mine');
   const [mergedContent, setMergedContent] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Yjs CRDT integration
+  const {
+    isConnected,
+    peers,
+    conflicts: yjsConflicts,
+    resolveConflict: resolveYjsConflict
+  } = useYjsCollaboration(templateId, `template-${templateId}`);
 
   useEffect(() => {
     loadConflicts();
-    subscribeToConflicts();
+    const unsubscribe = subscribeToConflicts();
+    return () => {
+      unsubscribe();
+    };
   }, [templateId]);
+  
+  // Monitor Yjs conflicts
+  useEffect(() => {
+    if (yjsConflicts.length > 0) {
+      // Convert Yjs conflicts to our conflict format
+      const newConflicts = yjsConflicts.map((c: any) => ({
+        id: `yjs-${c.timestamp}`,
+        template_id: templateId,
+        user_id: c.userId,
+        conflict_type: 'edit' as const,
+        original_content: c.snapshot,
+        conflicting_content: c.snapshot,
+        resolved: false,
+        created_at: new Date(c.timestamp).toISOString()
+      }));
+      setConflicts(prev => [...prev, ...newConflicts]);
+    }
+  }, [yjsConflicts, templateId]);
 
   const loadConflicts = async () => {
     try {
@@ -107,6 +137,15 @@ export const ConflictResolution: React.FC<ConflictResolutionProps> = ({
           activeConflict.conflicting_content
         );
       }
+      
+      // If this is a Yjs conflict, resolve it through CRDT
+      if (activeConflict.id.startsWith('yjs-')) {
+        await resolveYjsConflict(activeConflict.id, resolution, resolvedContent);
+        setConflicts(prev => prev.filter(c => c.id !== activeConflict.id));
+        setActiveConflict(null);
+        setMergedContent('');
+        return;
+      }
 
       const { error } = await supabase
         .from('collaboration_conflicts')
@@ -168,9 +207,16 @@ export const ConflictResolution: React.FC<ConflictResolutionProps> = ({
   if (conflicts.length === 0) {
     return (
       <div className="p-4 bg-green-50 rounded-lg">
-        <div className="flex items-center gap-2">
-          <Check className="w-5 h-5 text-green-600" />
-          <span className="text-green-700">No conflicts detected</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Check className="w-5 h-5 text-green-600" />
+            <span className="text-green-700">No conflicts detected</span>
+          </div>
+          {isConnected && peers.length > 0 && (
+            <div className="text-sm text-gray-500">
+              {peers.length} collaborator{peers.length !== 1 ? 's' : ''} online
+            </div>
+          )}
         </div>
       </div>
     );
