@@ -3,12 +3,12 @@
 ## Executive Summary
 Enterprise-grade document automation platform enabling variable-based document personalization with real-time collaboration. Built on React/TypeScript frontend with Supabase backend infrastructure for scalability and security.
 
-## Current Status: Post-Cycle 1 Planning (PR #31 Merged)
+## Current Status: Cycle 1 Architecture Update (PR #36 Active)
 
 ### Vision Statement
 A tool that lets users upload any document, manually insert variables like {{client_name}} where needed, then generate personalized versions by simply filling in the variable values. Leverage GitHub-personal MCP and Supabase MCP for enhanced integration.
 
-### Completed Features (PR #31 Merged to Main)
+### Previously Completed Features (PR #31 Merged to Main)
 - ✅ **Document Generation Core**: Variable substitution, single/bulk generation, CSV support
 - ✅ **Document Processing**: DOCX (mammoth), PDF (pdf-lib), template processing (docxtemplater)
 - ✅ **Backend Infrastructure**: 16 Supabase tables with RLS, 4 Edge Functions, Auth, Storage
@@ -342,29 +342,111 @@ PUT    /api/teams/:id/members         - Manage members
 - Template creation best practices
 - Troubleshooting guide
 
+## Cycle 1 Continuation: Architecture Focus Areas
+
+### Critical Path Features (Priority Order)
+1. **Advanced Variable System** (Highest Impact)
+   - Extends existing {{variable}} system
+   - Adds business logic capabilities
+   - Enables complex document automation
+
+2. **Conflict Resolution** (Collaboration Essential)
+   - Prevents data loss in simultaneous edits
+   - Required for true multi-user editing
+   - Foundation for enterprise adoption
+
+3. **Comment System** (User Requested)
+   - Enables template feedback loops
+   - Improves collaboration workflow
+   - Reduces iteration cycles
+
+### Architectural Decisions
+
+#### 1. Variable System Enhancement
+**Decision**: Extend current variable parser with AST-based evaluation
+```typescript
+interface AdvancedVariable {
+  type: 'text' | 'dropdown' | 'calculated' | 'conditional' | 'date' | 'number';
+  validation?: ValidationRule[];
+  dependencies?: string[];
+  formula?: string;
+  options?: SelectOption[];
+}
+```
+**Rationale**: Maintains backward compatibility while enabling complex logic
+
+#### 2. Collaboration Architecture
+**Decision**: Implement Yjs CRDT with Supabase Realtime
+```typescript
+// Integration approach
+- Yjs for conflict-free replicated data types
+- Supabase Realtime for transport layer
+- y-lexical for editor binding
+- IndexedDB for offline support
+```
+**Rationale**: Industry-proven solution, integrates with existing Lexical editor
+
+#### 3. Database Schema Evolution
+**Decision**: Extend existing tables rather than redesign
+```sql
+-- Add to existing schema
+ALTER TABLE templates ADD COLUMN variable_schema JSONB;
+ALTER TABLE template_versions ADD COLUMN conflicts JSONB;
+ALTER TABLE collaboration_sessions ADD COLUMN yjs_state BYTEA;
+```
+**Rationale**: Preserves data integrity, enables gradual migration
+
+## Implementation Strategy
+
+### Phase 1: Foundation (Days 1-2)
+- Validate existing infrastructure
+- Set up development environment
+- Create feature branches
+- Implement variable schema
+
+### Phase 2: Core Features (Days 3-5)
+- Advanced variable types
+- Yjs integration
+- Conflict resolution UI
+- Comment system
+
+### Phase 3: Integration (Days 6-7)
+- End-to-end testing
+- Performance optimization
+- Security review
+- Documentation
+
 ## Architecture Summary
 
-The Smart Contract Document Template System has successfully implemented all core features across multiple development cycles. The architecture leverages:
+The Smart Contract Document Template System continues evolution from solid foundation:
 
-- **Frontend**: React 18 with TypeScript, Lexical editor, real-time collaboration
-- **Backend**: Supabase with 16 tables, RLS policies, 4 Edge Functions
-- **Infrastructure**: Optimized bundle (107KB), 96.6% test coverage, comprehensive security
+- **Frontend**: React 18, TypeScript, Lexical, Yjs (new)
+- **Backend**: Supabase (16 tables + extensions), Edge Functions
+- **Infrastructure**: Optimized performance, comprehensive security
 
-## Risk Assessment
+## Risk Mitigation
 
-### Resolved Risks
-- ✅ Document processing complexity (solved with mammoth/pdf-lib)
-- ✅ Real-time synchronization (implemented with Supabase Realtime)
-- ✅ Performance bottlenecks (bundle optimized, caching implemented)
+### Technical Risks
+1. **Yjs Complexity**: Mitigated by proven library, fallback to locking
+2. **Variable Circular Dependencies**: Detect with dependency graph
+3. **Performance at Scale**: Implement pagination, virtual scrolling
 
-### Remaining Considerations
-- Manual Supabase dashboard configuration required
-- 3 tests require fixing for 100% pass rate
-- Bundle size can be further optimized (<100KB target)
+### Implementation Risks
+1. **Scope Creep**: Fixed feature set for Cycle 1
+2. **Testing Coverage**: Maintain >95% requirement
+3. **Migration Issues**: Backward compatibility required
+
+## Success Criteria
+- Advanced variables working with validation
+- Conflict resolution prevents data loss
+- Comments enable collaboration
+- All tests pass (>95%)
+- Bundle size <100KB
+- No breaking changes
 
 ## Next Immediate Steps
-1. Verify current implementation state across all components
-2. Run comprehensive integration tests
-3. Configure Supabase Auth security settings via dashboard
-4. Document any gaps between planned and implemented features
-5. Prepare for production deployment readiness assessment
+1. Review current codebase architecture
+2. Implement advanced variable schema
+3. Integrate Yjs with existing Realtime
+4. Add comment system to templates
+5. Comprehensive testing and optimization
