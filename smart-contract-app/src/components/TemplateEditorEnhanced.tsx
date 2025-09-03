@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { Save, Eye, Variable, Download, AlertCircle, Check } from 'lucide-react';
+import { Save, Eye, Variable, Download, AlertCircle, Check, MessageCircle, GitMerge } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { edgeFunctions } from '../services/edgeFunctions';
 import { useAuth } from '../contexts/AuthContext';
+import { AdvancedVariables } from './AdvancedVariables';
+import { ConflictResolution } from './ConflictResolution';
+import { TemplateComments } from './TemplateComments';
 
 interface VariableInfo {
   name: string;
@@ -28,6 +31,7 @@ const TemplateEditorEnhanced: React.FC = () => {
   const [previewValues, setPreviewValues] = useState<Record<string, any>>({});
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
+  const [activeTab, setActiveTab] = useState<'variables' | 'comments' | 'conflicts'>('variables');
 
   useEffect(() => {
     if (templateId) {
@@ -309,33 +313,100 @@ const TemplateEditorEnhanced: React.FC = () => {
         </div>
       </div>
 
-      {/* Variables Sidebar */}
-      <div className="w-80 bg-white border-l flex flex-col">
-        <div className="px-6 py-4 border-b">
-          <h2 className="text-lg font-semibold text-gray-900">Variables</h2>
-          <p className="text-sm text-gray-500 mt-1">{variables.length} variables found</p>
+      {/* Sidebar with Tabs */}
+      <div className="w-96 bg-white border-l flex flex-col">
+        {/* Tab Navigation */}
+        <div className="border-b">
+          <div className="flex">
+            <button
+              onClick={() => setActiveTab('variables')}
+              className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'variables'
+                  ? 'text-blue-600 border-blue-600'
+                  : 'text-gray-500 border-transparent hover:text-gray-700'
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Variable size={16} />
+                Variables
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('comments')}
+              className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'comments'
+                  ? 'text-blue-600 border-blue-600'
+                  : 'text-gray-500 border-transparent hover:text-gray-700'
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <MessageCircle size={16} />
+                Comments
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('conflicts')}
+              className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'conflicts'
+                  ? 'text-blue-600 border-blue-600'
+                  : 'text-gray-500 border-transparent hover:text-gray-700'
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <GitMerge size={16} />
+                Conflicts
+              </div>
+            </button>
+          </div>
         </div>
 
+        {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {variables.length === 0 ? (
-            <p className="text-gray-500 text-sm">
-              No variables yet. Insert variables using {'{{variable_name}}'} syntax.
-            </p>
-          ) : (
-            <div className="space-y-4">
+          {activeTab === 'variables' && (
+            <AdvancedVariables
+              templateId={templateId || ''}
+              variables={variables.map((v, idx) => ({
+                ...v,
+                id: `var-${idx}`,
+                data_type: 'text' as const,
+                default_value: ''
+              }))}
+              onVariableUpdate={(updatedVars) => {
+                // Handle variable updates
+                console.log('Variables updated:', updatedVars);
+              }}
+            />
+          )}
+
+          {activeTab === 'comments' && templateId && (
+            <TemplateComments
+              templateId={templateId}
+              onCommentAdded={(comment) => {
+                showMessage('success', 'Comment added successfully');
+              }}
+            />
+          )}
+
+          {activeTab === 'conflicts' && templateId && (
+            <ConflictResolution
+              templateId={templateId}
+              onConflictResolved={(conflictId, resolution) => {
+                showMessage('success', 'Conflict resolved successfully');
+              }}
+            />
+          )}
+        </div>
+
+        {/* Preview Values Section - Only show when Variables tab is active */}
+        {activeTab === 'variables' && variables.length > 0 && (
+          <div className="border-t p-6">
+            <h3 className="font-semibold text-gray-900 mb-4">Preview Values</h3>
+            <div className="space-y-3">
               {variables.map((variable) => (
-                <div key={variable.name} className="border rounded-lg p-3">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="font-medium text-gray-900">{variable.display_name}</p>
-                      <p className="text-xs text-gray-500">{`{{${variable.name}}}`}</p>
-                    </div>
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      variable.is_required ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
-                    }`}>
-                      {variable.is_required ? 'Required' : 'Optional'}
-                    </span>
-                  </div>
+                <div key={variable.name}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {variable.display_name}
+                  </label>
                   <input
                     type={variable.data_type === 'number' ? 'number' : variable.data_type === 'date' ? 'date' : 'text'}
                     value={previewValues[variable.name] || ''}
@@ -349,10 +420,12 @@ const TemplateEditorEnhanced: React.FC = () => {
                 </div>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="p-6 border-t">
+        {/* Generate Document Button */}
+        {activeTab === 'variables' && (
+          <div className="p-6 border-t">
           <button
             onClick={handleGenerateDocument}
             className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2"
@@ -360,7 +433,8 @@ const TemplateEditorEnhanced: React.FC = () => {
             <Download size={20} />
             <span>Generate Document</span>
           </button>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Message Toast */}
