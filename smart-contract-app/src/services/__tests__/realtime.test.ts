@@ -32,7 +32,10 @@ import { realtimeService, CollaborationEdit } from '../realtime';
 const mockSupabase = require('../../lib/supabase').supabase;
 
 describe('RealtimeCollaborationService', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Clean up any existing channels in the service
+    await realtimeService.cleanup();
+    
     // Create a fresh mock channel for each test
     mockChannel = createMockChannel();
     
