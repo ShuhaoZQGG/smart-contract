@@ -97,7 +97,7 @@ const TemplateEditor: React.FC = () => {
     return Array.from(new Set(matches.map(m => m.replace(/\{\{|\}\}/g, ''))))
   }
 
-  const saveTemplate = async () => {
+  const saveTemplate = useCallback(async () => {
     setSaving(true)
     try {
       // Get current version number
@@ -157,7 +157,7 @@ const TemplateEditor: React.FC = () => {
     } finally {
       setSaving(false)
     }
-  }
+  }, [content, id, variables])
 
   const updateVariable = (index: number, field: keyof TemplateVariable, value: any) => {
     const newVariables = [...variables]
@@ -165,16 +165,18 @@ const TemplateEditor: React.FC = () => {
     setVariables(newVariables)
   }
 
-  // Auto-save functionality
+  // Auto-save functionality with debounce
   useEffect(() => {
-    const autoSaveInterval = setInterval(() => {
-      if (content && !saving) {
-        saveTemplate()
-      }
-    }, 30000) // Auto-save every 30 seconds
+    // Don't auto-save if content is empty or saving is in progress
+    if (!content || saving || loading) return;
 
-    return () => clearInterval(autoSaveInterval)
-  }, [content, saving])
+    // Set up auto-save timer
+    const autoSaveTimer = setTimeout(() => {
+      saveTemplate();
+    }, 30000); // Auto-save every 30 seconds after last change
+
+    return () => clearTimeout(autoSaveTimer);
+  }, [content, saveTemplate, saving, loading])
 
   if (loading) {
     return (

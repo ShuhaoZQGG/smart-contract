@@ -54,10 +54,13 @@ export default function VariablePlugin({ onVariablesChange }: VariablePluginProp
       const text = textNode.getTextContent();
       const variablePattern = /\{\{([^}]+)\}\}/g;
       
-      if (variablePattern.test(text)) {
-        // Apply variable styling
-        textNode.setFormat(textNode.getFormat() | 16); // Custom format for variables
-        textNode.setStyle('color: #4f46e5; background-color: #e0e7ff; padding: 2px 4px; border-radius: 4px;');
+      // Only apply styling if the text contains variables and isn't already styled
+      if (variablePattern.test(text) && !textNode.hasFormat('code')) {
+        // Mark as styled to prevent infinite recursion
+        const currentFormat = textNode.getFormat();
+        if ((currentFormat & 16) === 0) { // Check if not already formatted
+          textNode.setFormat(currentFormat | 16); // Custom format for variables
+        }
       }
     });
 
