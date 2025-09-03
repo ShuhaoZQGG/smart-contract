@@ -3,182 +3,261 @@
 ## Executive Summary
 A comprehensive document personalization platform enabling users to create reusable templates with variable placeholders, generate personalized documents at scale, and collaborate in real-time. Built on Supabase infrastructure with modern React/TypeScript frontend.
 
-## Current Status: Cycle 1 Refined Planning
+## Current Status: Cycle 1 Architectural Planning Update
 
 ### Vision Statement
 A tool that lets users upload any document, manually insert variables like {{client_name}} where needed, then generate personalized versions by simply filling in the variable values. Leverage GitHub-personal MCP and Supabase MCP for enhanced integration.
 
-### Completed Features (Previous PRs #25, #29, #30)
+### Completed Features (PR #25 Merged to Main)
 - ✅ **Document Generation Core**: Variable substitution, single/bulk generation, CSV support
 - ✅ **Document Processing**: DOCX (mammoth), PDF (pdf-lib), template processing (docxtemplater)
-- ✅ **Backend Infrastructure**: 16 Supabase tables with RLS, 4 Edge Functions, Auth, Storage
+- ✅ **Backend Infrastructure**: 7 Supabase tables with RLS, 4 Edge Functions, Auth, Storage
 - ✅ **Performance**: Bundle optimized 546KB → 107KB, skeleton loaders, auto-save
 - ✅ **Rich Text Editor**: Lexical integration with formatting toolbar
 - ✅ **Real-time Collaboration**: WebSocket via Supabase Realtime, presence tracking
 - ✅ **Template Marketplace UI**: Gallery interface, search/filter, categories
 - ✅ **Quality**: 86/89 tests passing (96.6%), TypeScript throughout, build successful
-- ✅ **Security**: Audit logging, rate limiting, secure authentication
+- ✅ **Security**: Basic RLS policies, authentication required for all operations
 
-## Cycle 1 Next Steps: Consolidation & Enhancement
+## Architecture Overview
 
-### Immediate Priorities
+### Core System Components
 
-#### 1. Architecture Consolidation
-**Goal**: Ensure all components work seamlessly together
-- Verify integration between all 16 database tables
-- Test Edge Functions with current frontend
-- Validate real-time collaboration across components
-- Ensure template marketplace connects to backend
+#### 1. Frontend Architecture
+**Technology Stack**:
+- React 18.3 with TypeScript 5.6
+- Lexical Editor for rich text editing
+- Shadcn/ui + Tailwind CSS for UI
+- Zustand for state management
+- React Query for server state
+- Vite for build tooling
 
-#### 2. Security Hardening
-**Goal**: Production-ready security configuration
-- Configure Supabase Auth settings
-  - Enable HaveIBeenPwned password protection
-  - Configure MFA options (TOTP, SMS)
-  - Set password complexity requirements
-- Implement rate limiting on Edge Functions
-- Add audit logging for sensitive operations
-- Configure CORS and CSP headers
+#### 2. Backend Infrastructure
+**Supabase Components**:
+- PostgreSQL Database with Row Level Security
+- Authentication with multi-factor support
+- Cloud Storage for document management
+- Edge Functions for serverless processing
+- Realtime for WebSocket communication
 
-#### 3. Testing & Quality Assurance
-**Goal**: Achieve 100% test coverage on critical paths
-- Fix remaining 3 failing tests
-- Add E2E tests for complete user journeys
-- Performance testing with load simulation
-- Security penetration testing
+#### 3. Document Processing Pipeline
+**Libraries & Tools**:
+- mammoth.js for DOCX extraction
+- pdf-lib for PDF generation
+- docxtemplater + pizzip for template processing
+- papaparse for CSV parsing
+- Base64 encoding for binary formats
 
-### Future Enhancements (Post Cycle 1)
+## Database Schema Design
 
-#### Advanced Variables System
-**Goal**: Support complex document requirements
-- **Variable Types**:
-  - Dropdown selections with predefined options
-  - Calculated fields (formulas based on other variables)
-  - Conditional logic (if/then statements)
-  - Date pickers with validation
-  - Number fields with min/max constraints
-  - Rich text variables (formatted content)
-- **Variable Groups**: Organize related variables
-- **Default Values**: Pre-fill common values
-- **Validation Rules**: Custom validation logic
+### Core Tables (Implemented)
+```sql
+-- Users and authentication managed by Supabase Auth
 
-#### Collaboration Enhancement
-**Goal**: Enterprise-grade collaboration features
-- **Conflict Resolution**:
-  - Implement Operational Transformation (OT) or CRDT
-  - Visual diff for conflicting changes
-  - Merge UI for resolving conflicts
-- **Commenting System**:
-  - Inline comments on template content
-  - Thread discussions
-  - @mentions and notifications
-- **Version Control**:
-  - Full version history with rollback
-  - Compare versions side-by-side
-  - Branch/merge for template variations
-- **Activity Tracking**:
-  - Real-time activity feed
-  - Change attribution
-  - Audit trail
+-- Templates table
+CREATE TABLE templates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL,
+  content TEXT,
+  variables JSONB,
+  user_id UUID REFERENCES auth.users(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
 
-#### Marketplace Backend
-**Goal**: Functional template marketplace
-- **Database Schema**:
-  ```sql
-  -- Template marketplace
-  marketplace_templates (
-    id UUID PRIMARY KEY,
-    template_id UUID REFERENCES templates,
-    price DECIMAL(10,2),
-    currency VARCHAR(3),
-    downloads INTEGER DEFAULT 0,
-    revenue_share JSONB,
-    featured BOOLEAN DEFAULT false
-  )
-  
-  -- Ratings and reviews
-  template_ratings (
-    id UUID PRIMARY KEY,
-    template_id UUID REFERENCES templates,
-    user_id UUID REFERENCES auth.users,
-    rating INTEGER CHECK (1-5),
-    review TEXT,
-    verified_purchase BOOLEAN
-  )
-  
-  -- Purchase history
-  template_purchases (
-    id UUID PRIMARY KEY,
-    template_id UUID,
-    user_id UUID,
-    price DECIMAL(10,2),
-    purchased_at TIMESTAMPTZ
-  )
-  ```
-- **Features**:
-  - Public template submission
-  - Admin review/approval workflow
-  - Rating and review system
-  - Download tracking
-  - Revenue sharing for creators
-  - Featured templates
-  - Category management
+-- Template versions for history
+CREATE TABLE template_versions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  template_id UUID REFERENCES templates(id),
+  version INTEGER NOT NULL,
+  content TEXT,
+  variables JSONB,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
 
-#### Enterprise Features
-**Goal**: Support business requirements
-- **API Access**:
-  - RESTful API with OpenAPI spec
-  - API key management
-  - Rate limiting per key
-  - Usage tracking
-- **Webhook Integration**:
-  - Event-driven webhooks
-  - Configurable endpoints
-  - Retry logic
-  - Event filtering
-- **Team Management**:
-  - Organization accounts
-  - Role-based permissions
-  - Template sharing within teams
-  - Usage quotas
-- **Custom Branding**:
-  - White-label options
-  - Custom domains
-  - Theme customization
+-- Generated documents tracking
+CREATE TABLE generated_documents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  template_id UUID REFERENCES templates(id),
+  variable_values JSONB,
+  output_url TEXT,
+  format VARCHAR(10),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  user_id UUID REFERENCES auth.users(id)
+);
 
-## Technical Architecture Updates
+-- Collaboration and sharing
+CREATE TABLE collaborations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  template_id UUID REFERENCES templates(id),
+  user_id UUID REFERENCES auth.users(id),
+  permission_level VARCHAR(20),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
 
-### Frontend Enhancements
+-- Template marketplace (UI ready, backend pending)
+CREATE TABLE marketplace_templates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  template_id UUID REFERENCES templates(id),
+  price DECIMAL(10,2),
+  downloads INTEGER DEFAULT 0,
+  rating DECIMAL(3,2),
+  featured BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Analytics and usage tracking
+CREATE TABLE template_analytics (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  template_id UUID REFERENCES templates(id),
+  event_type VARCHAR(50),
+  event_data JSONB,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- User preferences and settings
+CREATE TABLE user_settings (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id),
+  preferences JSONB,
+  theme VARCHAR(20) DEFAULT 'light',
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+### Row Level Security Policies
+```sql
+-- Templates: Users can only see their own or shared templates
+ALTER TABLE templates ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY templates_select ON templates
+  FOR SELECT USING (
+    user_id = auth.uid() OR
+    EXISTS (
+      SELECT 1 FROM collaborations
+      WHERE template_id = templates.id
+      AND user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY templates_insert ON templates
+  FOR INSERT WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY templates_update ON templates
+  FOR UPDATE USING (user_id = auth.uid());
+
+CREATE POLICY templates_delete ON templates
+  FOR DELETE USING (user_id = auth.uid());
+
+-- Similar policies for other tables...
+```
+
+## API Design
+
+### Edge Functions (Deployed)
+1. **process-document**
+   - Handles document upload and text extraction
+   - Supports DOCX, PDF, TXT formats
+   - Returns extracted content and metadata
+
+2. **generate-document**
+   - Performs variable substitution
+   - Generates output in requested format
+   - Handles single document generation
+
+3. **bulk-generate**
+   - Processes CSV files for batch generation
+   - Creates multiple documents in parallel
+   - Returns ZIP archive of generated files
+
+4. **template-marketplace**
+   - Handles public template operations
+   - Search and filtering capabilities
+   - Template cloning functionality
+
+### REST API Endpoints
 ```typescript
-// New dependencies for Cycle 3
+// Template Management
+POST   /api/templates/upload         // Upload new document
+GET    /api/templates                // List user templates
+GET    /api/templates/:id           // Get template details
+PUT    /api/templates/:id           // Update template
+DELETE /api/templates/:id           // Delete template
+
+// Document Generation
+POST   /api/templates/:id/generate  // Generate single document
+POST   /api/templates/:id/bulk      // Generate from CSV
+GET    /api/documents/:id           // Download generated document
+
+// Collaboration
+POST   /api/templates/:id/share     // Share template
+GET    /api/templates/:id/collaborators // List collaborators
+DELETE /api/templates/:id/collaborators/:userId // Remove collaborator
+
+// Marketplace (Future)
+GET    /api/marketplace/templates   // Browse public templates
+POST   /api/marketplace/templates/:id/clone // Clone template
+```
+
+### WebSocket Events (Realtime)
+```typescript
+// Channel: template:{templateId}
 {
-  "yjs": "^13.x",                    // CRDT for collaboration
-  "y-lexical": "^0.x",               // Lexical CRDT binding
-  "react-diff-viewer": "^3.x",       // Version comparison
-  "recharts": "^2.x",                // Analytics charts
-  "stripe": "^14.x",                 // Payment processing
-  "@tanstack/react-table": "^8.x"    // Advanced tables
+  event: 'content:update',
+  payload: { content, userId, timestamp }
+}
+
+{
+  event: 'cursor:position',
+  payload: { position, userId }
+}
+
+{
+  event: 'presence:update',
+  payload: { users: [{id, name, status}] }
+}
+
+{
+  event: 'variable:change',
+  payload: { variables, userId }
 }
 ```
 
-### Backend Enhancements
-```typescript
-// New Edge Functions
-marketplace-api       // Marketplace operations
-webhook-processor    // Webhook delivery
-analytics-aggregator // Usage analytics
-payment-handler      // Stripe integration
-conflict-resolver    // OT/CRDT operations
-```
+## Implementation Roadmap
 
-### Database Migrations
-```sql
--- Performance indexes
-CREATE INDEX idx_templates_user_created ON templates(user_id, created_at DESC);
-CREATE INDEX idx_documents_template_created ON documents(template_id, created_at DESC);
-CREATE INDEX idx_marketplace_featured ON marketplace_templates(featured) WHERE featured = true;
-CREATE INDEX idx_ratings_template ON template_ratings(template_id, rating);
-```
+### Phase 1: Foundation ✅ (Complete)
+- Supabase project setup
+- Database schema and migrations
+- Authentication flow
+- Basic CRUD operations
+- File upload/storage
+
+### Phase 2: Core Features ✅ (Complete)
+- Document processing pipeline
+- Variable extraction and management
+- Single document generation
+- Rich text editor integration
+- Template versioning
+
+### Phase 3: Advanced Features ✅ (Complete)
+- Bulk generation from CSV
+- Real-time collaboration
+- Template marketplace UI
+- Performance optimizations
+- Comprehensive testing
+
+### Phase 4: Security & Polish (Current)
+- Security hardening
+- Rate limiting
+- Audit logging
+- Error handling improvements
+- Documentation
+
+### Phase 5: Future Enhancements (Next Cycles)
+- Advanced variable types (dropdowns, calculated fields, conditional logic)
+- Enhanced collaboration with conflict resolution (OT/CRDT)
+- Template marketplace backend with payments
+- Enterprise features (API access, webhooks, team management)
+- AI-powered features (smart variable detection, content generation)
 
 ## Performance Targets
 
