@@ -8,18 +8,24 @@ import { supabase } from '../lib/supabase';
 jest.mock('../lib/supabase', () => ({
   supabase: {
     from: jest.fn().mockImplementation(() => ({
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockResolvedValue({ data: [], error: null }),
-      insert: jest.fn().mockReturnThis(),
-      delete: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({ 
-        data: {
-          id: '123',
-          type: 'computed',
-          computation_formula: 'test formula'
-        }, 
-        error: null 
-      })
+      select: jest.fn().mockImplementation(() => ({
+        eq: jest.fn().mockResolvedValue({ data: [], error: null })
+      })),
+      insert: jest.fn().mockImplementation(() => ({
+        select: jest.fn().mockImplementation(() => ({
+          single: jest.fn().mockResolvedValue({ 
+            data: {
+              id: '123',
+              type: 'computed',
+              computation_formula: 'test formula'
+            }, 
+            error: null 
+          })
+        }))
+      })),
+      delete: jest.fn().mockImplementation(() => ({
+        eq: jest.fn().mockResolvedValue({ data: null, error: null })
+      }))
     }))
   }
 }));
