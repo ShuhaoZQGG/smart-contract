@@ -1,367 +1,230 @@
-# Smart Contract Document Template System - Architectural Plan
+# Smart Contract Document Template System - Project Plan
 
 ## Executive Summary
-A comprehensive document personalization platform enabling users to create reusable templates with variable placeholders, generate personalized documents at scale, and collaborate in real-time. Built on Supabase infrastructure with modern React/TypeScript frontend.
+Building a comprehensive document template system that transforms any document into a reusable template with variable substitution, enabling both single and bulk personalized document generation. The system leverages Supabase for backend infrastructure and provides real-time collaboration capabilities.
 
-## Current Status: Cycle 1 Planning Phase
+## Current Status Analysis
+Based on previous implementation review:
+- **Completed**: Core document generation, template management, rich text editor, real-time collaboration UI, marketplace UI
+- **Database**: 11 migrations applied, RLS policies active
+- **Edge Functions**: 4 functions deployed
+- **Bundle Size**: 107KB (optimized from 546KB)
+- **Test Coverage**: 66/69 tests passing
 
-### Vision Statement
-A tool that lets users upload any document, manually insert variables like {{client_name}} where needed, then generate personalized versions by simply filling in the variable values. Leverage GitHub-personal MCP and Supabase MCP for enhanced integration.
+## Requirements
 
-### Previous Implementation Status (From Cycles 1 & 2)
-- ✅ **Document Generation Core**: Variable substitution, single/bulk generation, CSV support
-- ✅ **Document Processing**: DOCX (mammoth), PDF (pdf-lib), template processing (docxtemplater)
-- ✅ **Backend Infrastructure**: Supabase DB with RLS, 4 Edge Functions, Auth, Storage
-- ✅ **Performance**: Bundle optimized 546KB → 106KB, skeleton loaders, auto-save
-- ✅ **Rich Text Editor**: Lexical integration with formatting toolbar
-- ✅ **Real-time Collaboration**: WebSocket via Supabase Realtime, presence tracking
-- ✅ **Template Marketplace UI**: Gallery interface, search/filter, categories
-- ✅ **Quality**: 66/79 tests passing (87%), TypeScript throughout, build successful
+### Core Functional Requirements
+1. **Document Upload & Processing**
+   - Support DOCX, PDF, TXT formats
+   - Preserve formatting during conversion
+   - Extract text content for editing
 
-## Cycle 3 Plan: Enhancement Phase
+2. **Template System**
+   - Variable insertion with {{variable_name}} syntax
+   - Variable extraction and validation
+   - Template versioning and management
 
-### Priority 1: Security & Configuration
-**Goal**: Production-ready security configuration
-- Configure Supabase Auth settings
-  - Enable HaveIBeenPwned password protection
-  - Configure MFA options (TOTP, SMS)
-  - Set password complexity requirements
-- Implement rate limiting on Edge Functions
-- Add audit logging for sensitive operations
-- Configure CORS and CSP headers
+3. **Document Generation**
+   - Single document via form input
+   - Bulk generation from CSV
+   - Export as PDF/DOCX
+   - Base64 encoding support
 
-### Priority 2: Advanced Variables System
-**Goal**: Support complex document requirements
-- **Variable Types**:
-  - Dropdown selections with predefined options
-  - Calculated fields (formulas based on other variables)
-  - Conditional logic (if/then statements)
-  - Date pickers with validation
-  - Number fields with min/max constraints
-  - Rich text variables (formatted content)
-- **Variable Groups**: Organize related variables
-- **Default Values**: Pre-fill common values
-- **Validation Rules**: Custom validation logic
+4. **Collaboration Features**
+   - Real-time editing via WebSocket
+   - User presence indicators
+   - Activity tracking
 
-### Priority 3: Collaboration Enhancement
-**Goal**: Enterprise-grade collaboration features
-- **Conflict Resolution**:
-  - Implement Operational Transformation (OT) or CRDT
-  - Visual diff for conflicting changes
-  - Merge UI for resolving conflicts
-- **Commenting System**:
-  - Inline comments on template content
-  - Thread discussions
-  - @mentions and notifications
-- **Version Control**:
-  - Full version history with rollback
-  - Compare versions side-by-side
-  - Branch/merge for template variations
-- **Activity Tracking**:
-  - Real-time activity feed
-  - Change attribution
-  - Audit trail
+5. **Template Marketplace**
+   - Public template gallery
+   - Search and filtering
+   - Template cloning
+   - Rating system
 
-### Priority 4: Marketplace Backend
-**Goal**: Functional template marketplace
-- **Database Schema**:
-  ```sql
-  -- Template marketplace
-  marketplace_templates (
-    id UUID PRIMARY KEY,
-    template_id UUID REFERENCES templates,
-    price DECIMAL(10,2),
-    currency VARCHAR(3),
-    downloads INTEGER DEFAULT 0,
-    revenue_share JSONB,
-    featured BOOLEAN DEFAULT false
-  )
-  
-  -- Ratings and reviews
-  template_ratings (
-    id UUID PRIMARY KEY,
-    template_id UUID REFERENCES templates,
-    user_id UUID REFERENCES auth.users,
-    rating INTEGER CHECK (1-5),
-    review TEXT,
-    verified_purchase BOOLEAN
-  )
-  
-  -- Purchase history
-  template_purchases (
-    id UUID PRIMARY KEY,
-    template_id UUID,
-    user_id UUID,
-    price DECIMAL(10,2),
-    purchased_at TIMESTAMPTZ
-  )
-  ```
-- **Features**:
-  - Public template submission
-  - Admin review/approval workflow
-  - Rating and review system
-  - Download tracking
-  - Revenue sharing for creators
-  - Featured templates
-  - Category management
+### Non-Functional Requirements
+- **Performance**: <2s page load, <100KB initial bundle
+- **Security**: Authentication required, RLS policies
+- **Scalability**: Support 1000+ concurrent users
+- **Availability**: 99.9% uptime target
 
-### Priority 5: Enterprise Features
-**Goal**: Support business requirements
-- **API Access**:
-  - RESTful API with OpenAPI spec
-  - API key management
-  - Rate limiting per key
-  - Usage tracking
-- **Webhook Integration**:
-  - Event-driven webhooks
-  - Configurable endpoints
-  - Retry logic
-  - Event filtering
-- **Team Management**:
-  - Organization accounts
-  - Role-based permissions
-  - Template sharing within teams
-  - Usage quotas
-- **Custom Branding**:
-  - White-label options
-  - Custom domains
-  - Theme customization
+## Architecture
 
-## Technical Architecture Updates
-
-### Frontend Enhancements
-```typescript
-// New dependencies for Cycle 3
-{
-  "yjs": "^13.x",                    // CRDT for collaboration
-  "y-lexical": "^0.x",               // Lexical CRDT binding
-  "react-diff-viewer": "^3.x",       // Version comparison
-  "recharts": "^2.x",                // Analytics charts
-  "stripe": "^14.x",                 // Payment processing
-  "@tanstack/react-table": "^8.x"    // Advanced tables
-}
+### System Architecture
+```
+┌─────────────────────────────────────────────┐
+│                Frontend (React)              │
+│  - Lexical Editor                            │
+│  - Real-time Collaboration                   │
+│  - Template Marketplace                      │
+└────────────────┬────────────────────────────┘
+                 │ HTTPS/WSS
+┌────────────────┴────────────────────────────┐
+│           Supabase Platform                  │
+│ ┌──────────────────────────────────────────┐│
+│ │         Edge Functions (Deno)             ││
+│ │  - Document Processing                    ││
+│ │  - Template Generation                    ││
+│ │  - Format Conversion                      ││
+│ └──────────────────────────────────────────┘│
+│ ┌──────────────────────────────────────────┐│
+│ │      PostgreSQL Database + RLS            ││
+│ │  - Templates, Users, Documents            ││
+│ └──────────────────────────────────────────┘│
+│ ┌──────────────────────────────────────────┐│
+│ │      Storage + Realtime + Auth            ││
+│ └──────────────────────────────────────────┘│
+└──────────────────────────────────────────────┘
 ```
 
-### Backend Enhancements
-```typescript
-// New Edge Functions
-marketplace-api       // Marketplace operations
-webhook-processor    // Webhook delivery
-analytics-aggregator // Usage analytics
-payment-handler      // Stripe integration
-conflict-resolver    // OT/CRDT operations
-```
-
-### Database Migrations
+### Database Schema
 ```sql
--- Performance indexes
-CREATE INDEX idx_templates_user_created ON templates(user_id, created_at DESC);
-CREATE INDEX idx_documents_template_created ON documents(template_id, created_at DESC);
-CREATE INDEX idx_marketplace_featured ON marketplace_templates(featured) WHERE featured = true;
-CREATE INDEX idx_ratings_template ON template_ratings(template_id, rating);
+-- Core Tables (Already Implemented)
+templates (id, name, content, variables, user_id, created_at)
+documents (id, template_id, generated_data, user_id, created_at)
+users (id, email, created_at)
+template_versions (id, template_id, version, content)
+collaborators (id, template_id, user_id, permissions)
+marketplace_templates (id, template_id, public, rating, downloads)
 ```
 
-## Performance Targets
+### Technology Stack
+- **Frontend**: React 18.3, TypeScript 5.6, Vite, Tailwind CSS
+- **Editor**: Lexical (Facebook)
+- **State**: Zustand + React Query
+- **Backend**: Supabase (PostgreSQL, Auth, Storage, Realtime, Edge Functions)
+- **Document Processing**: mammoth.js, pdf-lib, docxtemplater, pizzip
+- **Testing**: Jest, React Testing Library
 
-| Metric | Current | Cycle 3 Target | Strategy |
-|--------|---------|----------------|----------|
-| Bundle Size | 106KB | <100KB | Tree shaking, lazy loading |
-| Initial Load | 1.5s | <1.2s | CDN, preloading |
-| API Response | ~200ms | <150ms | Query optimization |
-| Test Coverage | 87% | >95% | Add integration tests |
-| Lighthouse | 92 | >95 | Performance optimizations |
+## Implementation Phases
 
-## Risk Mitigation
+### Phase 1: Infrastructure Stabilization ✅
+**Status**: COMPLETE
+- Database migrations applied
+- Edge Functions deployed
+- Authentication configured
+- Storage buckets created
+- RLS policies active
+
+### Phase 2: Core Features Enhancement (Current Focus)
+**Timeline**: 2 days
+**Priority**: HIGH
+
+1. **Security Hardening** (Day 1)
+   - Enable HaveIBeenPwned password protection
+   - Configure MFA options (TOTP, SMS)
+   - Implement rate limiting on Edge Functions
+   - Add audit logging
+
+2. **Performance Optimization** (Day 1)
+   - Reduce bundle to <100KB target
+   - Implement aggressive code splitting
+   - Add service worker for offline support
+   - Optimize database queries
+
+3. **Bug Fixes** (Day 2)
+   - Fix Jest mocking issues with Supabase
+   - Clean up unused imports
+   - Remove unused database indexes
+   - Resolve remaining test failures
+
+### Phase 3: Advanced Features
+**Timeline**: 3 days
+**Priority**: MEDIUM
+
+1. **Enhanced Variables** (Day 1)
+   - Dropdown selections
+   - Date pickers
+   - Calculated fields
+   - Conditional logic
+
+2. **Collaboration Enhancement** (Day 2)
+   - Conflict resolution (OT/CRDT)
+   - Comment system
+   - Version comparison
+   - Change tracking
+
+3. **Marketplace Backend** (Day 3)
+   - Public template API
+   - Rating/review system
+   - Usage analytics
+   - Revenue sharing
+
+### Phase 4: Enterprise Features
+**Timeline**: 2 days
+**Priority**: LOW
+
+1. **API & Integrations**
+   - RESTful API
+   - Webhook support
+   - Third-party integrations
+   - Zapier connector
+
+2. **Team Management**
+   - Organization structure
+   - Role-based permissions
+   - Usage quotas
+   - Billing integration
+
+## Risk Assessment
 
 ### Technical Risks
-1. **CRDT Complexity**
-   - Risk: Implementation difficulty
-   - Mitigation: Use Yjs library, proven solution
-   - Fallback: Simple locking mechanism
+| Risk | Impact | Probability | Mitigation |
+|------|--------|-------------|------------|
+| Bundle size optimization | Medium | Low | Already optimized to 107KB |
+| Real-time sync conflicts | High | Medium | Implement CRDT/OT |
+| Edge Function cold starts | Low | Medium | Use connection pooling |
+| Storage costs at scale | Medium | Low | Implement usage quotas |
 
-2. **Payment Processing**
-   - Risk: Compliance and security
-   - Mitigation: Stripe for PCI compliance
-   - Testing: Sandbox environment
-
-3. **Scale Performance**
-   - Risk: Database bottlenecks
-   - Mitigation: Connection pooling, caching
-   - Monitoring: Performance tracking
-
-### Business Risks
-1. **Marketplace Quality**
-   - Risk: Low-quality templates
-   - Mitigation: Review process, ratings
-   - Control: Admin moderation tools
-
-2. **Revenue Model**
-   - Risk: Pricing acceptance
-   - Mitigation: Freemium model
-   - Testing: A/B pricing tests
-
-## Development Timeline
-
-### Week 1-2: Security & Configuration
-- Configure Supabase Auth
-- Implement rate limiting
-- Add audit logging
-- Security testing
-
-### Week 3-4: Advanced Variables
-- Variable types implementation
-- UI components for variable config
-- Validation system
-- Testing and documentation
-
-### Week 5-6: Collaboration Features
-- CRDT integration
-- Commenting system
-- Version control UI
-- Conflict resolution
-
-### Week 7-8: Marketplace Backend
-- Database schema and migrations
-- API endpoints
-- Payment integration
-- Admin dashboard
-
-### Week 9-10: Enterprise Features
-- API development
-- Webhook system
-- Team management
-- Custom branding
-
-### Week 11-12: Testing & Optimization
-- Integration testing
-- Performance optimization
-- Security audit
-- Documentation
+### Security Risks
+| Risk | Impact | Probability | Mitigation |
+|------|--------|-------------|------------|
+| Insufficient MFA | High | High | Configure immediately |
+| Rate limiting absence | Medium | High | Implement in Phase 2 |
+| XSS in editor | High | Low | Lexical has built-in protection |
+| Data leakage | High | Low | RLS policies active |
 
 ## Success Metrics
+- **User Metrics**: 100+ active users in first month
+- **Performance**: <2s load time, 95+ Lighthouse score
+- **Quality**: <5 critical bugs, 90%+ test coverage
+- **Business**: 50+ templates created weekly
 
-### Technical KPIs
-- Test Coverage: >95%
-- API Response: <150ms p95
-- Error Rate: <0.05%
-- Uptime: 99.95%
+## Immediate Actions (Phase 2 Focus)
+1. Configure Supabase Auth security settings
+2. Implement rate limiting on all Edge Functions
+3. Add comprehensive audit logging
+4. Optimize bundle size below 100KB
+5. Fix remaining test failures
+6. Deploy monitoring and alerting
 
-### Business KPIs
-- Template Creation: +50% MoM
-- Document Generation: +100% MoM
-- Marketplace Revenue: $10K/month
-- Active Teams: 100+
+## Long-term Vision
+Become the industry-standard solution for document template management, supporting:
+- 10,000+ concurrent users
+- 1M+ documents generated monthly
+- Enterprise-grade security
+- Global marketplace with monetization
+- AI-powered template suggestions
+- Advanced workflow automation
 
-## Deployment Strategy
+## Dependencies
+- Supabase project (configured)
+- Node.js 18+ (installed)
+- Domain and SSL certificates (pending)
+- CDN setup (pending)
+- Monitoring tools (pending)
 
-### Staging Environment
-- Feature branches → Staging
-- Automated testing
-- Performance benchmarks
-- Security scans
+## Team Requirements
+- Full-stack developer (current)
+- UI/UX designer (optional)
+- DevOps engineer (for production)
+- QA engineer (for enterprise)
 
-### Production Rollout
-- Blue-green deployment
-- Feature flags for gradual rollout
-- Database migrations with rollback
-- Monitoring and alerts
-
-## Database Optimization
-
-### Current Issues (Non-critical)
-- 12 unused indexes identified
-- Monitor usage patterns before removal
-- Consider partitioning for large tables
-
-### Optimization Plan
-1. Analyze slow queries
-2. Add missing indexes
-3. Remove unused indexes
-4. Implement connection pooling
-5. Configure auto-vacuum
-
-## API Specification (Cycle 3)
-
-### New Endpoints
-```
-# Marketplace
-GET    /api/marketplace/templates     - Browse public templates
-POST   /api/marketplace/purchase      - Purchase template
-POST   /api/marketplace/rate          - Rate/review template
-GET    /api/marketplace/stats         - Template statistics
-
-# Collaboration
-GET    /api/templates/:id/versions    - Version history
-POST   /api/templates/:id/comment     - Add comment
-POST   /api/templates/:id/merge       - Merge changes
-GET    /api/templates/:id/activity    - Activity feed
-
-# Enterprise
-POST   /api/webhooks                  - Configure webhook
-GET    /api/usage/analytics           - Usage analytics
-POST   /api/teams                     - Create team
-PUT    /api/teams/:id/members         - Manage members
-```
-
-## Testing Strategy (Enhanced)
-
-### Unit Testing (Current: 87%)
-- Target: 95% coverage
-- Focus: New variable types, collaboration logic
-
-### Integration Testing
-- API endpoint testing
-- Database transaction testing
-- Edge Function testing
-- Webhook delivery testing
-
-### E2E Testing
-- User journeys with Playwright
-- Cross-browser testing
-- Mobile responsiveness
-- Performance testing
-
-### Security Testing
-- Penetration testing
-- OWASP compliance
-- Dependency scanning
-- Code security analysis
-
-## Monitoring & Observability
-
-### Application Monitoring
-- Error tracking (Sentry)
-- Performance monitoring (DataDog/New Relic)
-- User analytics (Mixpanel/Amplitude)
-- Custom metrics dashboard
-
-### Infrastructure Monitoring
-- Database metrics
-- Edge Function performance
-- Storage usage
-- API rate limits
-
-## Documentation Requirements
-
-### Developer Documentation
-- API reference with OpenAPI
-- SDK documentation
-- Integration guides
-- Code examples
-
-### User Documentation
-- User guides
-- Video tutorials
-- Template creation best practices
-- Troubleshooting guide
+## Budget Considerations
+- Supabase: $25/month (Pro plan)
+- CDN: ~$20/month
+- Monitoring: ~$30/month
+- Domain/SSL: ~$100/year
+- **Total**: ~$80/month operational costs
 
 ## Conclusion
-
-Cycle 3 represents the evolution from a functional MVP to a production-ready, enterprise-capable platform. With completed core features from Cycles 1-2, the focus shifts to advanced capabilities, security hardening, and marketplace functionality. The planned enhancements will position the Smart Contract Document Template System as a comprehensive solution for document automation needs.
-
-## Next Immediate Steps
-1. Create Cycle 3 development branch
-2. Configure Supabase Auth security settings
-3. Implement rate limiting on Edge Functions
-4. Begin advanced variable types development
-5. Set up monitoring and observability tools
+The project has a solid foundation with Cycle 1 features complete. Focus should be on security hardening and performance optimization before adding advanced features. The architecture is scalable and well-designed for future growth.
