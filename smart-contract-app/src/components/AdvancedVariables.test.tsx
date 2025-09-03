@@ -7,12 +7,12 @@ import { supabase } from '../lib/supabase';
 // Mock Supabase
 jest.mock('../lib/supabase', () => ({
   supabase: {
-    from: jest.fn().mockImplementation(() => ({
-      select: jest.fn().mockImplementation(() => ({
+    from: jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnValue({
         eq: jest.fn().mockResolvedValue({ data: [], error: null })
-      })),
-      insert: jest.fn().mockImplementation(() => ({
-        select: jest.fn().mockImplementation(() => ({
+      }),
+      insert: jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
           single: jest.fn().mockResolvedValue({ 
             data: {
               id: '123',
@@ -21,12 +21,12 @@ jest.mock('../lib/supabase', () => ({
             }, 
             error: null 
           })
-        }))
-      })),
-      delete: jest.fn().mockImplementation(() => ({
+        })
+      }),
+      delete: jest.fn().mockReturnValue({
         eq: jest.fn().mockResolvedValue({ data: null, error: null })
-      }))
-    }))
+      })
+    })
   }
 }));
 
@@ -102,25 +102,36 @@ describe('AdvancedVariables', () => {
     expect(conditionalButton.className).toContain('bg-blue-600');
   });
 
-  it('tests formula evaluation', () => {
+  it('tests formula evaluation', async () => {
     render(<AdvancedVariables {...mockProps} />);
     
     fireEvent.click(screen.getByText('Advanced Variables'));
     
-    // Select variable
-    const select = screen.getByRole('combobox');
-    fireEvent.change(select, { target: { value: 'amount' } });
+    // Wait for the panel to appear
+    await waitFor(() => {
+      expect(screen.getByText('Configure Advanced Variable')).toBeInTheDocument();
+    });
     
-    // Enter formula
-    const textarea = screen.getByPlaceholderText(/Computation Formula/);
-    fireEvent.change(textarea, { target: { value: '100 * 2' } });
+    // Select variable first - find the select element by its containing label text
+    const selectContainer = screen.getByText('Select Variable').parentElement;
+    const select = selectContainer?.querySelector('select');
+    if (select) {
+      fireEvent.change(select, { target: { value: 'amount' } });
+    }
+    
+    // Now the formula textarea should appear with the correct placeholder
+    await waitFor(() => {
+      const textarea = screen.getByPlaceholderText('{{amount}} * {{discount_rate}} / 100');
+      expect(textarea).toBeInTheDocument();
+      fireEvent.change(textarea, { target: { value: '100 * 2' } });
+    });
     
     // Test formula
     const testButton = screen.getByText('Test Formula');
     fireEvent.click(testButton);
     
     // Formula testing is simple evaluation, should show result
-    waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByText(/Result:/)).toBeInTheDocument();
     });
   });
@@ -130,12 +141,24 @@ describe('AdvancedVariables', () => {
     
     fireEvent.click(screen.getByText('Advanced Variables'));
     
-    // Configure advanced variable
-    const select = screen.getByRole('combobox');
-    fireEvent.change(select, { target: { value: 'amount' } });
+    // Wait for the panel to appear
+    await waitFor(() => {
+      expect(screen.getByText('Configure Advanced Variable')).toBeInTheDocument();
+    });
     
-    const textarea = screen.getByPlaceholderText(/Computation Formula/);
-    fireEvent.change(textarea, { target: { value: '{{base}} * {{rate}}' } });
+    // Configure advanced variable - find the select element by its containing label text
+    const selectContainer = screen.getByText('Select Variable').parentElement;
+    const select = selectContainer?.querySelector('select');
+    if (select) {
+      fireEvent.change(select, { target: { value: 'amount' } });
+    }
+    
+    // Now the formula textarea should appear
+    await waitFor(() => {
+      const textarea = screen.getByPlaceholderText('{{amount}} * {{discount_rate}} / 100');
+      expect(textarea).toBeInTheDocument();
+      fireEvent.change(textarea, { target: { value: '{{base}} * {{rate}}' } });
+    });
     
     // Add button should appear
     const addButton = screen.getByText('Add Advanced Variable');
