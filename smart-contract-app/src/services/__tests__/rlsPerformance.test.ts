@@ -91,7 +91,7 @@ describe('RLS Performance Tests', () => {
     it('should allow users to create bulk generations efficiently', async () => {
       if (!testTemplateId) {
         // Create a test template if not already created
-        const { data: template } = await supabase
+        const { data: template, error: templateError } = await supabase
           .from('templates')
           .insert({
             name: 'Bulk Gen Test Template',
@@ -101,7 +101,10 @@ describe('RLS Performance Tests', () => {
           .select()
           .single();
         
-        testTemplateId = template?.id || '';
+        if (templateError || !template?.id) {
+          throw new Error('Failed to create test template for bulk generation test');
+        }
+        testTemplateId = template.id;
       }
 
       const startTime = Date.now();
