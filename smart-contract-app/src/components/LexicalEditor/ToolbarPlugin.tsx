@@ -3,6 +3,7 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import {
   $getSelection,
   $isRangeSelection,
+  $getRoot,
   CAN_REDO_COMMAND,
   CAN_UNDO_COMMAND,
   FORMAT_ELEMENT_COMMAND,
@@ -45,6 +46,8 @@ import {
   Type,
   Variable,
 } from 'lucide-react';
+import { VariableInsertDialog } from './VariableInsertDialog';
+import { Button } from '../ui/button';
 
 const LowPriority = 1;
 
@@ -62,6 +65,8 @@ export default function ToolbarPlugin() {
   const [isStrikethrough, setIsStrikethrough] = useState(false);
   const [isCode, setIsCode] = useState(false);
   const [isLink, setIsLink] = useState(false);
+  const [showVariableDialog, setShowVariableDialog] = useState(false);
+  const [existingVariables, setExistingVariables] = useState<string[]>([]);
 
   const updateToolbar = useCallback(() => {
     const selection = $getSelection();
@@ -118,16 +123,35 @@ export default function ToolbarPlugin() {
     );
   }, [editor, updateToolbar]);
 
-  const insertVariable = useCallback(() => {
+  const insertVariable = useCallback((variableName: string, variableType: string) => {
     editor.update(() => {
       const selection = $getSelection();
       if ($isRangeSelection(selection)) {
-        const variableName = prompt('Enter variable name:');
-        if (variableName) {
-          selection.insertText(`{{${variableName}}}`);
-        }
+        selection.insertText(`{{${variableName}}}`);
+        // Track the variable for future reference
+        setExistingVariables(prev => {
+          if (!prev.includes(variableName)) {
+            return [...prev, variableName];
+          }
+          return prev;
+        });
       }
     });
+    setShowVariableDialog(false);
+  }, [editor]);
+
+  // Extract variables from content
+  useEffect(() => {
+    const unregister = editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        const text = $getRoot().getTextContent();
+        const variablePattern = /\{\{([^}]+)\}\}/g;
+        const matches = [...text.matchAll(variablePattern)];
+        const variables = [...new Set(matches.map(m => m[1].trim()))];
+        setExistingVariables(variables);
+      });
+    });
+    return unregister;
   }, [editor]);
 
   const formatHeading = useCallback(
@@ -302,13 +326,20 @@ export default function ToolbarPlugin() {
       </button>
       <Divider />
       <button
-        onClick={insertVariable}
+        onClick={() => setShowVariableDialog(true)}
         className="toolbar-item spaced variable-button"
         aria-label="Insert Variable"
       >
         <Variable className="format" />
         <span className="text">Insert Variable</span>
       </button>
+      
+      <VariableInsertDialog
+        open={showVariableDialog}
+        onClose={() => setShowVariableDialog(false)}
+        onInsert={insertVariable}
+        existingVariables={existingVariables}
+      />
     </div>
   );
 }
