@@ -7,26 +7,31 @@ import { supabase } from '../lib/supabase';
 // Mock Supabase
 jest.mock('../lib/supabase', () => ({
   supabase: {
-    from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
-      })),
-      insert: jest.fn(() => ({
+    from: jest.fn((table: string) => {
+      // Return appropriate mock based on table name
+      return {
         select: jest.fn(() => ({
-          single: jest.fn(() => Promise.resolve({ 
-            data: {
-              id: '123',
-              type: 'computed',
-              computation_formula: 'test formula'
-            }, 
-            error: null 
+          eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
+        })),
+        insert: jest.fn(() => ({
+          select: jest.fn(() => ({
+            single: jest.fn(() => Promise.resolve({ 
+              data: {
+                id: '123',
+                type: 'computed',
+                computation_formula: 'test formula',
+                template_id: 'template-123',
+                base_variable_id: '2'
+              }, 
+              error: null 
+            }))
           }))
+        })),
+        delete: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ data: null, error: null }))
         }))
-      })),
-      delete: jest.fn(() => ({
-        eq: jest.fn(() => Promise.resolve({ data: null, error: null }))
-      }))
-    }))
+      };
+    })
   }
 }));
 
