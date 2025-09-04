@@ -58,13 +58,23 @@ describe('TemplateComments', () => {
     // Create chainable mock with proper structure
     const createSelectChain = (finalData: any) => {
       const orderMock = jest.fn().mockResolvedValue({ data: finalData, error: null });
-      const isMock = jest.fn().mockReturnValue({ order: orderMock });
+      const eqChainMock = jest.fn().mockReturnValue({ 
+        eq: jest.fn().mockReturnValue({ order: orderMock }),
+        order: orderMock
+      });
+      const isMock = jest.fn().mockReturnValue({ 
+        order: orderMock,
+        eq: eqChainMock
+      });
       const eqMock = jest.fn().mockReturnValue({ 
         is: isMock,
-        eq: jest.fn().mockReturnValue({ order: orderMock }) // Support chaining eq calls
+        eq: eqChainMock,
+        order: orderMock
       });
       const selectMock = jest.fn().mockReturnValue({ 
-        eq: eqMock 
+        eq: eqMock,
+        is: isMock,
+        order: orderMock 
       });
       
       return selectMock;

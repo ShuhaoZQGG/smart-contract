@@ -43,17 +43,17 @@ jest.mock('../lib/supabase', () => {
   
   // Create proper chainable mock
   const createQueryChain = (data: any) => {
+    const orderMock = jest.fn().mockResolvedValue({ data, error: null });
+    const eqChain2 = jest.fn().mockReturnValue({ order: orderMock });
+    const eqChain1 = jest.fn().mockReturnValue({ eq: eqChain2 });
+    const selectChain = jest.fn().mockReturnValue({ eq: eqChain1 });
+    
+    const updateEqMock = jest.fn().mockResolvedValue({ data, error: null });
+    const updateChain = jest.fn().mockReturnValue({ eq: updateEqMock });
+    
     const chain = {
-      select: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            order: jest.fn(() => Promise.resolve({ data, error: null }))
-          }))
-        }))
-      })),
-      update: jest.fn(() => ({
-        eq: jest.fn(() => Promise.resolve({ data, error: null }))
-      }))
+      select: selectChain,
+      update: updateChain
     };
     
     return chain;
