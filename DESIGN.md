@@ -2,9 +2,9 @@
 
 ## Design System Foundation
 
-### Material Design 3 Components
+### Visual Identity
 - **Primary Color**: #2563eb (Blue) - Professional, trustworthy
-- **Secondary Color**: #10b981 (Green) - Success, confirmation
+- **Secondary Color**: #10b981 (Green) - Success, confirmation  
 - **Accent Color**: #8b5cf6 (Violet) - Variables, premium features
 - **Variable Highlight**: #fbbf24 (Amber) - Variable identification
 - **Error**: #ef4444 (Red)
