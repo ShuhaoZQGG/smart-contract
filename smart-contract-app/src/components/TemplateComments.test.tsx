@@ -5,64 +5,77 @@ import { TemplateComments } from './TemplateComments';
 import { AuthProvider } from '../contexts/AuthContext';
 
 // Mock Supabase
+const mockSelect = jest.fn();
+const mockEq = jest.fn();
+const mockIs = jest.fn();
+const mockOrder = jest.fn();
+const mockInsert = jest.fn();
+const mockUpdate = jest.fn();
+const mockDelete = jest.fn();
+
+// Set up default chain
+mockSelect.mockReturnValue({
+  eq: mockEq
+});
+
+mockEq.mockReturnValue({
+  is: mockIs
+});
+
+mockIs.mockReturnValue({
+  order: mockOrder
+});
+
+mockOrder.mockResolvedValue({
+  data: [
+    {
+      id: '1',
+      template_id: 'template-123',
+      user_id: 'user-456',
+      content: 'This is a test comment',
+      resolved: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      user: {
+        email: 'test@user.com',
+        full_name: 'Test User'
+      }
+    }
+  ],
+  error: null
+});
+
+mockInsert.mockReturnValue({
+  select: jest.fn().mockReturnValue({
+    single: jest.fn().mockResolvedValue({
+      data: {
+        id: '2',
+        content: 'New comment',
+        user_id: 'user-123',
+        template_id: 'template-123',
+        created_at: new Date().toISOString()
+      },
+      error: null
+    })
+  })
+});
+
+mockUpdate.mockReturnValue({
+  eq: jest.fn().mockResolvedValue({ error: null })
+});
+
+mockDelete.mockReturnValue({
+  eq: jest.fn().mockResolvedValue({ error: null })
+});
+
 jest.mock('../lib/supabase', () => ({
   supabase: {
-    from: jest.fn((table: string) => {
-      if (table === 'template_comments') {
-        return {
-          select: jest.fn(() => ({
-            eq: jest.fn(() => ({
-              is: jest.fn(() => ({
-                order: jest.fn(() => Promise.resolve({ 
-                  data: [
-                    {
-                      id: '1',
-                      template_id: 'template-123',
-                      user_id: 'user-456',
-                      content: 'This is a test comment',
-                      resolved: false,
-                      created_at: new Date().toISOString(),
-                      updated_at: new Date().toISOString(),
-                      user: {
-                        email: 'test@user.com',
-                        full_name: 'Test User'
-                      }
-                    }
-                  ], 
-                  error: null 
-                }))
-              }))
-            }))
-          })),
-          insert: jest.fn(() => ({
-            select: jest.fn(() => ({
-              single: jest.fn(() => Promise.resolve({
-                data: {
-                  id: '2',
-                  content: 'New comment',
-                  user_id: 'user-123',
-                  template_id: 'template-123',
-                  created_at: new Date().toISOString()
-                },
-                error: null
-              }))
-            }))
-          })),
-          update: jest.fn(() => ({
-            eq: jest.fn(() => Promise.resolve({ error: null }))
-          })),
-          delete: jest.fn(() => ({
-            eq: jest.fn(() => Promise.resolve({ error: null }))
-          }))
-        };
-      }
-      return {
-        select: jest.fn(),
-        insert: jest.fn(),
-        update: jest.fn(),
-        delete: jest.fn()
-      };
-    }),
+    from: jest.fn(() => ({
+      select: mockSelect,
+      insert: mockInsert,
+      update: mockUpdate,
+      delete: mockDelete
+    })),
     channel: jest.fn(() => ({
       on: jest.fn().mockReturnThis(),
       subscribe: jest.fn().mockReturnThis(),

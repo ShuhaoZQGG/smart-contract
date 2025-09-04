@@ -5,46 +5,52 @@ import { ConflictResolution } from './ConflictResolution';
 import { AuthProvider } from '../contexts/AuthContext';
 
 // Mock Supabase
+const mockSelect = jest.fn();
+const mockEq = jest.fn();
+const mockOrder = jest.fn();
+const mockUpdate = jest.fn();
+
+// Set up the chain for the default mock
+mockSelect.mockReturnValue({
+  eq: mockEq
+});
+
+mockEq.mockReturnValue({
+  eq: jest.fn().mockReturnValue({
+    order: mockOrder
+  })
+});
+
+mockOrder.mockResolvedValue({
+  data: [
+    {
+      id: '1',
+      template_id: 'template-123',
+      user_id: 'user-456',
+      conflict_type: 'edit',
+      original_content: { text: 'Original content' },
+      conflicting_content: { text: 'Conflicting content' },
+      resolved: false,
+      created_at: new Date().toISOString(),
+      user: {
+        email: 'other@user.com',
+        full_name: 'Other User'
+      }
+    }
+  ],
+  error: null
+});
+
+mockUpdate.mockReturnValue({
+  eq: jest.fn().mockResolvedValue({ error: null })
+});
+
 jest.mock('../lib/supabase', () => ({
   supabase: {
-    from: jest.fn((table: string) => {
-      if (table === 'collaboration_conflicts') {
-        return {
-          select: jest.fn(() => ({
-            eq: jest.fn(() => ({
-              eq: jest.fn(() => ({
-                order: jest.fn(() => Promise.resolve({ 
-                  data: [
-                    {
-                      id: '1',
-                      template_id: 'template-123',
-                      user_id: 'user-456',
-                      conflict_type: 'edit',
-                      original_content: { text: 'Original content' },
-                      conflicting_content: { text: 'Conflicting content' },
-                      resolved: false,
-                      created_at: new Date().toISOString(),
-                      user: {
-                        email: 'other@user.com',
-                        full_name: 'Other User'
-                      }
-                    }
-                  ], 
-                  error: null 
-                }))
-              }))
-            }))
-          })),
-          update: jest.fn(() => ({
-            eq: jest.fn(() => Promise.resolve({ error: null }))
-          }))
-        };
-      }
-      return {
-        select: jest.fn(),
-        update: jest.fn()
-      };
-    }),
+    from: jest.fn(() => ({
+      select: mockSelect,
+      update: mockUpdate
+    })),
     channel: jest.fn(() => ({
       on: jest.fn().mockReturnThis(),
       subscribe: jest.fn().mockReturnThis(),
@@ -74,16 +80,7 @@ describe('ConflictResolution', () => {
 
   it('renders no conflicts state when empty', async () => {
     // Override mock for this test
-    const { supabase } = require('../lib/supabase');
-    supabase.from.mockImplementationOnce(() => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            order: jest.fn(() => Promise.resolve({ data: [], error: null }))
-          }))
-        }))
-      }))
-    }));
+    mockOrder.mockResolvedValueOnce({ data: [], error: null });
 
     render(
       <AuthProvider>
