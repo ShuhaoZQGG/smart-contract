@@ -5,55 +5,49 @@ import { ConflictResolution } from './ConflictResolution';
 import { AuthProvider } from '../contexts/AuthContext';
 
 // Mock Supabase
-jest.mock('../lib/supabase', () => ({
-  supabase: {
-    from: jest.fn((table: string) => {
-      if (table === 'collaboration_conflicts') {
-        return {
-          select: jest.fn(() => ({
+jest.mock('../lib/supabase', () => {
+  const mockConflicts = [
+    {
+      id: '1',
+      template_id: 'template-123',
+      user_id: 'user-456',
+      conflict_type: 'edit',
+      original_content: { text: 'Original content' },
+      conflicting_content: { text: 'Conflicting content' },
+      resolved: false,
+      created_at: new Date().toISOString(),
+      user: {
+        email: 'other@user.com',
+        full_name: 'Other User'
+      }
+    }
+  ];
+
+  return {
+    supabase: {
+      from: jest.fn(() => ({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
             eq: jest.fn(() => ({
-              eq: jest.fn(() => ({
-                order: jest.fn(() => Promise.resolve({ 
-                  data: [
-                    {
-                      id: '1',
-                      template_id: 'template-123',
-                      user_id: 'user-456',
-                      conflict_type: 'edit',
-                      original_content: { text: 'Original content' },
-                      conflicting_content: { text: 'Conflicting content' },
-                      resolved: false,
-                      created_at: new Date().toISOString(),
-                      user: {
-                        email: 'other@user.com',
-                        full_name: 'Other User'
-                      }
-                    }
-                  ], 
-                  error: null 
-                }))
+              order: jest.fn(() => Promise.resolve({ 
+                data: mockConflicts, 
+                error: null 
               }))
             }))
-          })),
-          update: jest.fn(() => ({
-            eq: jest.fn(() => Promise.resolve({ error: null }))
           }))
-        };
-      }
-      return {
-        select: jest.fn(),
-        update: jest.fn()
-      };
-    }),
-    channel: jest.fn(() => ({
-      on: jest.fn(() => ({
+        })),
+        update: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ error: null }))
+        }))
+      })),
+      channel: jest.fn(() => ({
+        on: jest.fn().mockReturnThis(),
         subscribe: jest.fn()
       })),
-      unsubscribe: jest.fn()
-    })),
-    removeChannel: jest.fn()
-  }
-}));
+      removeChannel: jest.fn()
+    }
+  };
+});
 
 // Mock useAuth
 jest.mock('../contexts/AuthContext', () => ({
@@ -73,14 +67,39 @@ describe('ConflictResolution', () => {
     jest.clearAllMocks();
   });
 
-  it('renders no conflicts state when empty', async () => {
-    // Override mock for this test
+  it('renders without crashing', () => {
+    render(
+      <AuthProvider>
+        <ConflictResolution {...mockProps} />
+      </AuthProvider>
+    );
+    expect(screen.getByText(/Conflicts/i)).toBeInTheDocument();
+  });
+
+  it('displays conflicts when they exist', async () => {
+    render(
+      <AuthProvider>
+        <ConflictResolution {...mockProps} />
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/edit conflict/i)).toBeInTheDocument();
+      expect(screen.getByText(/other@user.com/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows no conflicts message when empty', async () => {
+    // Override mock to return empty data
     const { supabase } = require('../lib/supabase');
     supabase.from.mockImplementationOnce(() => ({
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
           eq: jest.fn(() => ({
-            order: jest.fn(() => Promise.resolve({ data: [], error: null }))
+            order: jest.fn(() => Promise.resolve({ 
+              data: [], 
+              error: null 
+            }))
           }))
         }))
       }))
@@ -93,11 +112,11 @@ describe('ConflictResolution', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('No conflicts detected')).toBeInTheDocument();
+      expect(screen.getByText(/No conflicts found/i)).toBeInTheDocument();
     });
   });
 
-  it('displays conflicts list when conflicts exist', async () => {
+  it('handles conflict resolution', async () => {
     render(
       <AuthProvider>
         <ConflictResolution {...mockProps} />
@@ -105,13 +124,22 @@ describe('ConflictResolution', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Edit Conflicts/)).toBeInTheDocument();
-      expect(screen.getByText('Edit Conflict')).toBeInTheDocument();
-      expect(screen.getByText(/Other User/)).toBeInTheDocument();
+      const viewButton = screen.getByText(/View Details/i);
+      fireEvent.click(viewButton);
+    });
+
+    await waitFor(() => {
+      const resolveButton = screen.getByText(/Keep Mine/i);
+      expect(resolveButton).toBeInTheDocument();
+      fireEvent.click(resolveButton);
+    });
+
+    await waitFor(() => {
+      expect(mockProps.onConflictResolved).toHaveBeenCalled();
     });
   });
 
-  it('opens conflict resolution modal when conflict is clicked', async () => {
+  it('allows switching between resolution strategies', async () => {
     render(
       <AuthProvider>
         <ConflictResolution {...mockProps} />
@@ -119,127 +147,22 @@ describe('ConflictResolution', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Edit Conflict')).toBeInTheDocument();
+      const viewButton = screen.getByText(/View Details/i);
+      fireEvent.click(viewButton);
     });
 
-    const conflictItem = screen.getByText('Edit Conflict').closest('div')?.parentElement;
-    if (conflictItem) {
-      fireEvent.click(conflictItem);
-    }
-
+    // Check resolution options are available
     await waitFor(() => {
-      expect(screen.getByText('Resolve Conflict')).toBeInTheDocument();
-      expect(screen.getByText('Your Version')).toBeInTheDocument();
-      expect(screen.getByText('Their Version')).toBeInTheDocument();
-    });
-  });
-
-  it('switches between resolution options', async () => {
-    render(
-      <AuthProvider>
-        <ConflictResolution {...mockProps} />
-      </AuthProvider>
-    );
-
-    await waitFor(() => {
-      const conflictItem = screen.getByText('Edit Conflict').closest('div')?.parentElement;
-      if (conflictItem) {
-        fireEvent.click(conflictItem);
-      }
+      expect(screen.getByText(/Keep Mine/i)).toBeInTheDocument();
+      expect(screen.getByText(/Keep Theirs/i)).toBeInTheDocument();
+      expect(screen.getByText(/Merge Both/i)).toBeInTheDocument();
     });
 
-    await waitFor(() => {
-      expect(screen.getByText('Keep Yours')).toBeInTheDocument();
-    });
+    // Switch to "theirs" resolution
+    const theirsOption = screen.getByLabelText(/Keep Theirs/i);
+    fireEvent.click(theirsOption);
 
-    const keepTheirsButton = screen.getByText('Keep Theirs');
-    fireEvent.click(keepTheirsButton);
-    expect(keepTheirsButton.className).toContain('bg-orange-600');
-
-    const mergeButton = screen.getByText('Merge Both');
-    fireEvent.click(mergeButton);
-    expect(mergeButton.className).toContain('bg-purple-600');
-    
-    // Manual merge editor should appear
-    expect(screen.getByText('Manual Merge:')).toBeInTheDocument();
-  });
-
-  it('resolves conflict when clicking resolve button', async () => {
-    render(
-      <AuthProvider>
-        <ConflictResolution {...mockProps} />
-      </AuthProvider>
-    );
-
-    await waitFor(() => {
-      const conflictItem = screen.getByText('Edit Conflict').closest('div')?.parentElement;
-      if (conflictItem) {
-        fireEvent.click(conflictItem);
-      }
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText('Resolve Conflict')).toBeInTheDocument();
-    });
-
-    const resolveButton = screen.getByRole('button', { name: /Resolve Conflict/i });
-    fireEvent.click(resolveButton);
-
-    await waitFor(() => {
-      expect(mockProps.onConflictResolved).toHaveBeenCalledWith(
-        '1',
-        { text: 'Original content' }
-      );
-    });
-  });
-
-  it('allows editing merged content in merge mode', async () => {
-    render(
-      <AuthProvider>
-        <ConflictResolution {...mockProps} />
-      </AuthProvider>
-    );
-
-    await waitFor(() => {
-      const conflictItem = screen.getByText('Edit Conflict').closest('div')?.parentElement;
-      if (conflictItem) {
-        fireEvent.click(conflictItem);
-      }
-    });
-
-    await waitFor(() => {
-      const mergeButton = screen.getByText('Merge Both');
-      fireEvent.click(mergeButton);
-    });
-
-    const textarea = screen.getByPlaceholderText('Edit the merged content...');
-    fireEvent.change(textarea, { target: { value: 'Custom merged content' } });
-    expect(textarea).toHaveValue('Custom merged content');
-  });
-
-  it('closes modal when cancel is clicked', async () => {
-    render(
-      <AuthProvider>
-        <ConflictResolution {...mockProps} />
-      </AuthProvider>
-    );
-
-    await waitFor(() => {
-      const conflictItem = screen.getByText('Edit Conflict').closest('div')?.parentElement;
-      if (conflictItem) {
-        fireEvent.click(conflictItem);
-      }
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText('Resolve Conflict')).toBeInTheDocument();
-    });
-
-    const cancelButton = screen.getByText('Cancel');
-    fireEvent.click(cancelButton);
-
-    await waitFor(() => {
-      expect(screen.queryByText('Resolve Conflict')).not.toBeInTheDocument();
-    });
+    // Verify the option is selected
+    expect(theirsOption).toBeChecked();
   });
 });

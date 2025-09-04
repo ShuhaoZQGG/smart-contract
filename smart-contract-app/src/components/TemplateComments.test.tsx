@@ -63,12 +63,14 @@ jest.mock('../lib/supabase', () => ({
         delete: jest.fn()
       };
     }),
-    channel: jest.fn(() => ({
-      on: jest.fn(() => ({
-        subscribe: jest.fn()
-      })),
-      unsubscribe: jest.fn()
-    })),
+    channel: jest.fn(() => {
+      const channelMock = {
+        on: jest.fn().mockReturnThis(),
+        subscribe: jest.fn().mockReturnThis(),
+        unsubscribe: jest.fn()
+      };
+      return channelMock;
+    }),
     removeChannel: jest.fn()
   }
 }));

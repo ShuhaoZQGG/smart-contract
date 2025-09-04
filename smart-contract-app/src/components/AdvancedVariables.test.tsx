@@ -7,26 +7,36 @@ import { supabase } from '../lib/supabase';
 // Mock Supabase
 jest.mock('../lib/supabase', () => ({
   supabase: {
-    from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
-      })),
-      insert: jest.fn(() => ({
-        select: jest.fn(() => ({
-          single: jest.fn(() => Promise.resolve({ 
-            data: {
-              id: '123',
-              type: 'computed',
-              computation_formula: 'test formula'
-            }, 
-            error: null 
+    from: jest.fn((table: string) => {
+      if (table === 'advanced_variables') {
+        return {
+          select: jest.fn(() => ({
+            eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
+          })),
+          insert: jest.fn(() => ({
+            select: jest.fn().mockReturnThis(),
+            single: jest.fn(() => Promise.resolve({ 
+              data: {
+                id: '123',
+                template_id: 'template-123',
+                variable_id: '2', // amount variable
+                type: 'computed',
+                computation_formula: '{{base}} * {{rate}}'
+              }, 
+              error: null 
+            }))
+          })),
+          delete: jest.fn(() => ({
+            eq: jest.fn(() => Promise.resolve({ data: null, error: null }))
           }))
+        };
+      }
+      return {
+        select: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
         }))
-      })),
-      delete: jest.fn(() => ({
-        eq: jest.fn(() => Promise.resolve({ data: null, error: null }))
-      }))
-    }))
+      };
+    })
   }
 }));
 
