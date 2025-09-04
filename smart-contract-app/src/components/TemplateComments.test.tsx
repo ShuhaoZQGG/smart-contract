@@ -64,9 +64,8 @@ jest.mock('../lib/supabase', () => ({
       };
     }),
     channel: jest.fn(() => ({
-      on: jest.fn(() => ({
-        subscribe: jest.fn()
-      })),
+      on: jest.fn().mockReturnThis(),
+      subscribe: jest.fn().mockReturnThis(),
       unsubscribe: jest.fn()
     })),
     removeChannel: jest.fn()
