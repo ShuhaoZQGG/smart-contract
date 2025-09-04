@@ -5,42 +5,45 @@ import { AdvancedVariables } from './AdvancedVariables';
 import { supabase } from '../lib/supabase';
 
 // Mock Supabase
-jest.mock('../lib/supabase', () => ({
-  supabase: {
-    from: jest.fn((table: string) => {
-      // Return appropriate mock based on table name
-      if (table === 'advanced_variables') {
-        return {
-          select: jest.fn(() => ({
-            eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
-          })),
-          insert: jest.fn(() => ({
-            select: jest.fn(() => ({
-              single: jest.fn(() => Promise.resolve({ 
-                data: {
-                  id: '123',
-                  type: 'computed',
-                  computation_formula: '{{base}} * {{rate}}', // Match what the test sets
-                  template_id: 'template-123',
-                  variable_id: '2' // Changed from base_variable_id to variable_id
-                }, 
-                error: null 
-              }))
-            }))
-          })),
-          delete: jest.fn(() => ({
-            eq: jest.fn(() => Promise.resolve({ data: null, error: null }))
-          }))
-        };
-      }
+jest.mock('../lib/supabase', () => {
+  const createChainableMock = (table: string) => {
+    if (table === 'advanced_variables') {
       return {
         select: jest.fn(() => ({
           eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
+        })),
+        insert: jest.fn(() => ({
+          select: jest.fn(() => ({
+            single: jest.fn(() => Promise.resolve({ 
+              data: {
+                id: '123',
+                type: 'computed',
+                computation_formula: '{{base}} * {{rate}}', // Match what the test sets
+                template_id: 'template-123',
+                variable_id: '2' // Changed from base_variable_id to variable_id
+              }, 
+              error: null 
+            }))
+          }))
+        })),
+        delete: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ data: null, error: null }))
         }))
       };
-    })
-  }
-}));
+    }
+    return {
+      select: jest.fn(() => ({
+        eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
+      }))
+    };
+  };
+  
+  return {
+    supabase: {
+      from: jest.fn((table: string) => createChainableMock(table))
+    }
+  };
+});
 
 describe('AdvancedVariables', () => {
   const mockVariables = [
