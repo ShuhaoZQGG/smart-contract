@@ -5,100 +5,80 @@ import { TemplateComments } from './TemplateComments';
 import { AuthProvider } from '../contexts/AuthContext';
 
 // Mock Supabase
-const mockSelect = jest.fn();
-const mockEq = jest.fn();
-const mockEqChained = jest.fn();
-const mockIs = jest.fn();
-const mockOrder = jest.fn();
-const mockInsert = jest.fn();
-const mockUpdate = jest.fn();
-const mockDelete = jest.fn();
-
-// Default mock data
-const defaultMockData = [
-  {
-    id: '1',
-    template_id: 'template-123',
-    user_id: 'user-456',
-    content: 'This is a test comment',
-    resolved: false,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    user: {
-      email: 'test@user.com',
-      full_name: 'Test User'
+jest.mock('../lib/supabase', () => {
+  // Default mock data
+  const defaultMockData = [
+    {
+      id: '1',
+      template_id: 'template-123',
+      user_id: 'user-456',
+      content: 'This is a test comment',
+      resolved: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      user: {
+        email: 'test@user.com',
+        full_name: 'Test User'
+      }
     }
-  }
-];
-
-// Set up default chain
-mockSelect.mockImplementation(() => ({
-  eq: mockEq
-}));
-
-mockEq.mockImplementation(() => ({
-  is: mockIs
-}));
-
-mockIs.mockImplementation(() => ({
-  order: mockOrder
-}));
-
-// The order method returns either a promise or a chainable object
-mockOrder.mockImplementation(() => {
-  // Create a chainable mock that also resolves as a promise
-  const chainable: any = {
-    eq: mockEqChained,
-    then: (resolve: any) => resolve({ data: defaultMockData, error: null })
+  ];
+  
+  // Create chainable mock methods
+  const createChainableMock = (finalData: any) => {
+    const chainable: any = {
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      is: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      insert: jest.fn(() => ({
+        select: jest.fn(() => ({
+          single: jest.fn(() => Promise.resolve({
+            data: {
+              id: '2',
+              content: 'New comment',
+              user_id: 'user-123',
+              template_id: 'template-123',
+              created_at: new Date().toISOString()
+            },
+            error: null
+          }))
+        }))
+      })),
+      update: jest.fn(() => ({
+        eq: jest.fn(() => Promise.resolve({ error: null }))
+      })),
+      delete: jest.fn(() => ({
+        eq: jest.fn(() => Promise.resolve({ error: null }))
+      }))
+    };
+    
+    // Handle the chain: select().eq().is().order() or select().eq().is().order().eq()
+    chainable.select = jest.fn(() => ({
+      eq: jest.fn(() => ({
+        is: jest.fn(() => ({
+          order: jest.fn(() => {
+            // Return a thenable object that also has an eq method
+            const result: any = { 
+              data: finalData, 
+              error: null,
+              then: (fn: any) => Promise.resolve({ data: finalData, error: null }).then(fn)
+            };
+            result.eq = jest.fn(() => Promise.resolve({ data: finalData, error: null }));
+            return result;
+          })
+        }))
+      }))
+    }));
+    
+    return chainable;
   };
-  return chainable;
-});
-
-// For when eq is called after order (for showResolved filter)
-mockEqChained.mockResolvedValue({
-  data: defaultMockData,
-  error: null
-});
-
-mockInsert.mockReturnValue({
-  select: jest.fn().mockReturnValue({
-    single: jest.fn().mockResolvedValue({
-      data: {
-        id: '2',
-        content: 'New comment',
-        user_id: 'user-123',
-        template_id: 'template-123',
-        created_at: new Date().toISOString()
-      },
-      error: null
-    })
-  })
-});
-
-mockUpdate.mockReturnValue({
-  eq: jest.fn().mockResolvedValue({ error: null })
-});
-
-mockDelete.mockReturnValue({
-  eq: jest.fn().mockResolvedValue({ error: null })
-});
-
-jest.mock('../lib/supabase', () => ({
-  supabase: {
+  
+  const mockSupabase = {
     from: jest.fn((table: string) => {
       if (table === 'template_comments') {
-        return {
-          select: mockSelect,
-          insert: mockInsert,
-          update: mockUpdate,
-          delete: mockDelete
-        };
+        return createChainableMock(defaultMockData);
       }
-      return {
-        select: jest.fn(() => ({
-          eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
-        }))
-      };
+      return createChainableMock([]);
     }),
     channel: jest.fn(() => ({
       on: jest.fn().mockReturnThis(),
@@ -106,8 +86,12 @@ jest.mock('../lib/supabase', () => ({
       unsubscribe: jest.fn()
     })),
     removeChannel: jest.fn()
-  }
-}));
+  };
+  
+  return {
+    supabase: mockSupabase
+  };
+});
 
 // Mock useAuth
 jest.mock('../contexts/AuthContext', () => ({

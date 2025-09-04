@@ -41,39 +41,51 @@ jest.mock('../lib/supabase', () => {
     }
   ];
   
-  return {
-    supabase: {
-      from: jest.fn((table: string) => {
-        if (table === 'collaboration_conflicts') {
-          return {
-            select: jest.fn(() => ({
-              eq: jest.fn(() => ({
-                eq: jest.fn(() => ({
-                  order: jest.fn(() => Promise.resolve({ data: mockData, error: null }))
-                }))
-              }))
-            })),
-            update: jest.fn(() => ({
-              eq: jest.fn(() => Promise.resolve({ error: null }))
-            }))
-          };
-        }
-        return {
-          select: jest.fn(() => ({
-            eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
-          })),
-          update: jest.fn(() => ({
-            eq: jest.fn(() => Promise.resolve({ error: null }))
+  // Create chainable mock methods
+  const createChainableMock = (finalData: any) => {
+    const chainable: any = {
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis()
+    };
+    
+    // Chain select properly
+    chainable.select = jest.fn(() => {
+      return {
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            order: jest.fn(() => Promise.resolve({ data: finalData, error: null }))
           }))
-        };
-      }),
-      channel: jest.fn(() => ({
-        on: jest.fn().mockReturnThis(),
-        subscribe: jest.fn().mockReturnThis(),
-        unsubscribe: jest.fn()
-      })),
-      removeChannel: jest.fn()
-    }
+        }))
+      };
+    });
+    
+    // Update method chain
+    chainable.update = jest.fn(() => ({
+      eq: jest.fn(() => Promise.resolve({ data: finalData, error: null }))
+    }));
+    
+    return chainable;
+  };
+  
+  const mockSupabase = {
+    from: jest.fn((table: string) => {
+      if (table === 'collaboration_conflicts') {
+        return createChainableMock(mockData);
+      }
+      return createChainableMock([]);
+    }),
+    channel: jest.fn(() => ({
+      on: jest.fn().mockReturnThis(),
+      subscribe: jest.fn().mockReturnThis(),
+      unsubscribe: jest.fn()
+    })),
+    removeChannel: jest.fn()
+  };
+  
+  return {
+    supabase: mockSupabase
   };
 });
 
