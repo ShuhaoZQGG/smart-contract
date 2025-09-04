@@ -5,57 +5,38 @@ import { AdvancedVariables } from './AdvancedVariables';
 import { supabase } from '../lib/supabase';
 
 // Mock Supabase with proper structure
-jest.mock('../lib/supabase', () => {
-  const mockFrom = jest.fn();
-  
-  // Setup default mock behavior
-  mockFrom.mockImplementation((table: string) => {
-    const mockSelect = jest.fn();
-    const mockEq = jest.fn();
-    const mockInsert = jest.fn();
-    const mockDelete = jest.fn();
-    const mockSingle = jest.fn();
-
-    // Setup the chain for select().eq()
-    mockEq.mockResolvedValue({ data: [], error: null });
-    mockSelect.mockReturnValue({ eq: mockEq });
-
-    // Setup the chain for insert().select().single()
-    mockSingle.mockResolvedValue({ 
-      data: {
-        id: '123',
-        type: 'computed',
-        computation_formula: '{{base}} * {{rate}}',
-        template_id: 'template-123',
-        variable_id: '2'
-      }, 
-      error: null 
-    });
-    
-    mockInsert.mockReturnValue({
+jest.mock('../lib/supabase', () => ({
+  supabase: {
+    from: jest.fn().mockImplementation((table: string) => ({
       select: jest.fn().mockReturnValue({
-        single: mockSingle
+        eq: jest.fn().mockResolvedValue({ 
+          data: [], 
+          error: null 
+        })
+      }),
+      insert: jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({ 
+            data: {
+              id: '123',
+              type: 'computed',
+              computation_formula: '{{base}} * {{rate}}',
+              template_id: 'template-123',
+              variable_id: '2'
+            }, 
+            error: null 
+          })
+        })
+      }),
+      delete: jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({ 
+          data: null, 
+          error: null 
+        })
       })
-    });
-
-    // Setup the chain for delete().eq()
-    mockDelete.mockReturnValue({
-      eq: jest.fn().mockResolvedValue({ data: null, error: null })
-    });
-    
-    return {
-      select: mockSelect,
-      insert: mockInsert,
-      delete: mockDelete
-    };
-  });
-
-  return {
-    supabase: {
-      from: mockFrom
-    }
-  };
-});
+    }))
+  }
+}));
 
 describe('AdvancedVariables', () => {
   const mockVariables = [

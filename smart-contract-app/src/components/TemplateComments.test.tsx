@@ -57,27 +57,21 @@ describe('TemplateComments', () => {
     
     // Create chainable mock with proper structure
     const createSelectChain = (finalData: any) => {
-      const orderMock = jest.fn().mockResolvedValue({ data: finalData, error: null });
-      const eqChainMock = jest.fn().mockReturnValue({ 
-        eq: jest.fn().mockReturnValue({ order: orderMock }),
-        order: orderMock
+      const chainObject: any = {
+        data: finalData,
+        error: null
+      };
+      
+      chainObject.order = jest.fn().mockReturnValue(chainObject);
+      chainObject.eq = jest.fn().mockReturnValue(chainObject);
+      chainObject.is = jest.fn().mockReturnValue(chainObject);
+      chainObject.then = jest.fn().mockImplementation((resolve) => {
+        resolve({ data: finalData, error: null });
+        return Promise.resolve({ data: finalData, error: null });
       });
-      const isMock = jest.fn().mockReturnValue({ 
-        order: orderMock,
-        eq: eqChainMock
-      });
-      const eqMock = jest.fn().mockReturnValue({ 
-        is: isMock,
-        eq: eqChainMock,
-        order: orderMock
-      });
-      // Support select with join query string
+      
       const selectMock = jest.fn().mockImplementation((query?: string) => {
-        return { 
-          eq: eqMock,
-          is: isMock,
-          order: orderMock 
-        };
+        return chainObject;
       });
       
       return selectMock;
