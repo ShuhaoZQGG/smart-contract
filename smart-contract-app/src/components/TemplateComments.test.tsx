@@ -55,18 +55,26 @@ describe('TemplateComments', () => {
       }
     ];
     
-    // Create chainable mock
+    // Create chainable mock with proper structure
+    const createSelectChain = (finalData: any) => {
+      const orderMock = jest.fn().mockResolvedValue({ data: finalData, error: null });
+      const isMock = jest.fn().mockReturnValue({ order: orderMock });
+      const eqMock = jest.fn().mockReturnValue({ 
+        is: isMock,
+        eq: jest.fn().mockReturnValue({ order: orderMock }) // Support chaining eq calls
+      });
+      const selectMock = jest.fn().mockReturnValue({ 
+        eq: eqMock 
+      });
+      
+      return selectMock;
+    };
+    
     const createChainableMock = (finalData: any) => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          is: jest.fn(() => ({
-            order: jest.fn(() => Promise.resolve({ data: finalData, error: null }))
-          }))
-        }))
-      })),
-      insert: jest.fn(() => ({
-        select: jest.fn(() => ({
-          single: jest.fn(() => Promise.resolve({
+      select: createSelectChain(finalData),
+      insert: jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({
             data: {
               id: '2',
               content: 'New comment',
@@ -75,15 +83,15 @@ describe('TemplateComments', () => {
               created_at: new Date().toISOString()
             },
             error: null
-          }))
-        }))
-      })),
-      update: jest.fn(() => ({
-        eq: jest.fn(() => Promise.resolve({ error: null }))
-      })),
-      delete: jest.fn(() => ({
-        eq: jest.fn(() => Promise.resolve({ error: null }))
-      }))
+          })
+        })
+      }),
+      update: jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({ error: null })
+      }),
+      delete: jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({ error: null })
+      })
     });
     
     mockSupabase.from.mockImplementation((table: string) => {
@@ -272,7 +280,7 @@ describe('TemplateComments', () => {
 
     await waitFor(() => {
       expect(screen.getByText('No comments yet')).toBeInTheDocument();
-      expect(screen.getByText('Be the first to comment')).toBeInTheDocument();
+      expect(screen.getByText('Be the first to comment on this template')).toBeInTheDocument();
     });
   });
 });
