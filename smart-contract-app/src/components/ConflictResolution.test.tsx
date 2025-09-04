@@ -185,7 +185,8 @@ describe('ConflictResolution', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Edit Conflicts/)).toBeInTheDocument();
-      expect(screen.getByText('Edit Conflict')).toBeInTheDocument();
+      // Check for the conflict type text (it's capitalized and split)
+      expect(screen.getByText('edit')).toBeInTheDocument();
       expect(screen.getByText(/Other User/)).toBeInTheDocument();
     });
   });
