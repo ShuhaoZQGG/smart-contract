@@ -46,7 +46,10 @@ jest.mock('../lib/supabase', () => {
     const orderMock = jest.fn().mockResolvedValue({ data, error: null });
     const eqChain2 = jest.fn().mockReturnValue({ order: orderMock });
     const eqChain1 = jest.fn().mockReturnValue({ eq: eqChain2 });
-    const selectChain = jest.fn().mockReturnValue({ eq: eqChain1 });
+    // Support select with optional join query string
+    const selectChain = jest.fn().mockImplementation((query?: string) => {
+      return { eq: eqChain1 };
+    });
     
     const updateEqMock = jest.fn().mockResolvedValue({ data, error: null });
     const updateChain = jest.fn().mockReturnValue({ eq: updateEqMock });

@@ -71,10 +71,13 @@ describe('TemplateComments', () => {
         eq: eqChainMock,
         order: orderMock
       });
-      const selectMock = jest.fn().mockReturnValue({ 
-        eq: eqMock,
-        is: isMock,
-        order: orderMock 
+      // Support select with join query string
+      const selectMock = jest.fn().mockImplementation((query?: string) => {
+        return { 
+          eq: eqMock,
+          is: isMock,
+          order: orderMock 
+        };
       });
       
       return selectMock;
