@@ -100,20 +100,16 @@ describe('ConflictResolution', () => {
   it('renders no conflicts state when empty', async () => {
     // Override mock for this test
     mockSupabaseClient.from.mockImplementationOnce((table: string) => {
-      if (table === 'collaboration_conflicts') {
-        return {
-          select: jest.fn(() => ({
-            eq: jest.fn(() => ({
-              eq: jest.fn(() => ({
-                order: jest.fn(() => Promise.resolve({ data: [], error: null }))
-              }))
-            }))
-          }))
-        };
-      }
       return {
         select: jest.fn(() => ({
-          eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
+          eq: jest.fn(() => ({
+            eq: jest.fn(() => ({
+              order: jest.fn(() => Promise.resolve({ data: [], error: null }))
+            }))
+          }))
+        })),
+        update: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ data: null, error: null }))
         }))
       };
     });
