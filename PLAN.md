@@ -13,7 +13,7 @@ A tool that lets users upload any document, manually insert variables like {{cli
 - **Edge Functions**: 5/5 deployed and ACTIVE ✅
 - **Authentication**: Supabase Auth configured ✅
 - **Storage**: Cloud buckets operational ✅
-- **Tests**: 95/113 passing (84.1% coverage) ✅
+- **Tests**: 96/113 passing (85% coverage) ✅
 - **Build**: Production ready ✅
 - **Bundle**: 107KB (optimized from 546KB)
 
