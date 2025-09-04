@@ -16,7 +16,7 @@
 ### Typography
 - **Headings**: Inter (700, 600, 500)
 - **Body**: Inter (400, 300)
-- **Code/Variables**: JetBrains Mono
+- **Code/Variables**: Fira Code
 - **Sizes**: 12px, 14px, 16px, 20px, 24px, 32px, 48px
 
 ### Component Library
