@@ -17,10 +17,11 @@
 - **Sizes**: 12px, 14px, 16px, 20px, 24px, 32px, 48px
 
 ### Component Library
-- **Framework**: Material UI v5 + Custom Components
+- **Framework**: Material Design 3 + React Components
 - **Icons**: Heroicons + Custom SVG
 - **Animations**: Framer Motion
 - **Forms**: React Hook Form + Zod validation
+- **Editor**: Lexical (Rich Text)
 
 ## Information Architecture
 
@@ -29,11 +30,11 @@
 Dashboard | Templates | Editor | Marketplace | Analytics | Settings
 ```
 
-### User Roles & Permissions
-1. **Free User**: 5 templates, basic features
-2. **Pro User**: Unlimited templates, collaboration
-3. **Team Admin**: Team management, shared workspace
-4. **Enterprise**: API access, custom branding
+### User Roles & Permissions (Aligned with Supabase Auth)
+1. **Free User**: 5 templates, basic features, single document generation
+2. **Pro User**: Unlimited templates, bulk generation, collaboration, version control
+3. **Team Admin**: Team management, shared workspace, template sharing, analytics
+4. **Enterprise**: API access, webhooks, custom branding, advanced variables
 
 ## Core User Journeys
 
@@ -86,7 +87,7 @@ Open Template → Invite Team → Real-time Edit → Comment/Review → Publish
 └─────────────────────────────────────────────────────────┘
 ```
 
-### 2. Template Editor (Rich Text with Variables)
+### 2. Template Editor (Lexical Rich Text with Variables)
 ```
 ┌─────────────────────────────────────────────────────────┐
 │ ← Back   Employment Contract v2.1   [Save] [Preview] 🔄 │
@@ -111,7 +112,7 @@ Open Template → Invite Team → Real-time Edit → Comment/Review → Publish
 │ │               │  │                              │    │ │
 │ └───────────────┴─────────────────────────────────┘    │ │
 │                                                          │
-│ 💬 Comments (3)  📊 Version History  👥 Active Users(2) │
+│ 💬 Comments (3)  📊 Versions  👥 Active Users(2)  🔄 Auto-save │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -238,27 +239,28 @@ Open Template → Invite Team → Real-time Edit → Comment/Review → Publish
 └─────────────────────────────────────────────────────────┘
 ```
 
-### 7. Real-time Collaboration View
+### 7. Real-time Collaboration View (Supabase Realtime)
 ```
 ┌─────────────────────────────────────────────────────────┐
 │ 👥 Collaborative Editing - Employment Contract          │
 ├─────────────────────────────────────────────────────────┤
-│ Active Users:                                           │
+│ Active Users (Presence):                                │
 │ 🟢 You  🟡 Sarah (editing)  🔵 Mike (viewing)          │
 │                                                          │
 │ ┌─────────────────────────────────────────────────┐   │
-│ │ [Editor with live cursors and selections]       │   │
+│ │ [Lexical Editor with Yjs CRDT sync]             │   │
 │ │                                                   │   │
 │ │ This agreement is between                        │   │
-│ │ {{company}} │Sarah is typing...│                 │   │
+│ │ {{company}} │Sarah's cursor│                     │   │
 │ │                                                   │   │
 │ └─────────────────────────────────────────────────┘   │
 │                                                          │
-│ 💬 Comments & Activity                                  │
+│ 💬 Comments & Activity (WebSocket)                      │
 │ ┌─────────────────────────────────────────────────┐   │
 │ │ Sarah: Should we add a confidentiality clause?  │   │
 │ │ Mike: @Sarah Yes, I'll draft it now            │   │
 │ │ System: Mike added variable {{nda_duration}}    │   │
+│ │ System: Conflict resolved automatically (Yjs)   │   │
 │ └─────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -418,7 +420,7 @@ Open Template → Invite Team → Real-time Edit → Comment/Review → Publish
 
 ## Supabase Auth Integration
 
-### Login Flow
+### Login Flow (Supabase Auth UI)
 ```
 ┌─────────────────────────┐
 │   Smart Contract        │
@@ -439,8 +441,10 @@ Open Template → Invite Team → Real-time Edit → Comment/Review → Publish
 │      Google]           │
 │  [⚫ Continue with     │
 │      GitHub]           │
+│  [✉️ Magic Link]       │
 │                         │
 │  New user? [Sign up]   │
+│  Forgot? [Reset]       │
 └─────────────────────────┘
 ```
 
@@ -463,9 +467,84 @@ Open Template → Invite Team → Real-time Edit → Comment/Review → Publish
 └─────────────────────────┘
 ```
 
-## Analytics Dashboard
+## Supabase-Specific UI Components
 
-### Metrics Display
+### Database-Driven Features
+
+#### Template Versions (template_versions table)
+```
+┌─────────────────────────────────────────┐
+│ Version History                         │
+├─────────────────────────────────────────┤
+│ v2.1 (current) - 2 hours ago           │
+│   ✓ Added payment terms                │
+│                                         │
+│ v2.0 - Yesterday                       │
+│   ✓ Updated legal clauses              │
+│                                         │
+│ v1.9 - 3 days ago                      │
+│   ✓ Initial template                   │
+│                                         │
+│ [Compare] [Restore] [Download]         │
+└─────────────────────────────────────────┘
+```
+
+#### Advanced Variables (advanced_variables table)
+```
+┌─────────────────────────────────────────┐
+│ Advanced Variable Configuration         │
+├─────────────────────────────────────────┤
+│ Type: [Conditional ▼]                   │
+│                                         │
+│ IF {{client_type}} = "Enterprise"       │
+│ THEN {{discount}} = 20%                │
+│ ELSE {{discount}} = 10%                │
+│                                         │
+│ [Test Logic] [Save Configuration]       │
+└─────────────────────────────────────────┘
+```
+
+#### Rate Limiting Indicator (rate_limits table)
+```
+API Usage: ████████░░ 80/100 requests
+Resets in: 45 minutes
+```
+
+#### Webhooks Configuration (webhooks table)
+```
+┌─────────────────────────────────────────┐
+│ Webhook Settings                        │
+├─────────────────────────────────────────┤
+│ URL: [https://api.example.com/hook]    │
+│                                         │
+│ Events:                                 │
+│ ☑ Document Generated                   │
+│ ☑ Template Updated                     │
+│ ☐ Bulk Process Complete               │
+│                                         │
+│ Secret: [••••••••••]                   │
+│                                         │
+│ [Test Webhook] [Save]                  │
+└─────────────────────────────────────────┘
+```
+
+### Edge Function Status Dashboard
+```
+┌─────────────────────────────────────────────────┐
+│ Edge Functions Health                          │
+├─────────────────────────────────────────────────┤
+│ process-document      ✅ Active  12ms avg      │
+│ process-template      ✅ Active  8ms avg       │
+│ generate-document     ✅ Active  15ms avg      │
+│ process-docx         ✅ Active  22ms avg       │
+│ marketplace-backend   ✅ Active  10ms avg      │
+│                                                 │
+│ Total Invocations: 12,456 (last 24h)          │
+│ Error Rate: 0.02%                             │
+└─────────────────────────────────────────────────┘
+```
+
+## Analytics Dashboard
 ```
 ┌──────────────────────────────────────┐
 │ Template Analytics                   │
@@ -561,6 +640,134 @@ Open Template → Invite Team → Real-time Edit → Comment/Review → Publish
 - Persistent localStorage
 - Smooth transition animation
 
+## Document Processing UI
+
+### Upload & Processing Flow
+```
+┌─────────────────────────────────────────────────┐
+│ Document Upload & Processing                    │
+├─────────────────────────────────────────────────┤
+│                                                  │
+│ ┌──────────────────────────────────────────┐   │
+│ │                                          │   │
+│ │   📄 Drag & drop DOCX/PDF here         │   │
+│ │       or click to browse                │   │
+│ │                                          │   │
+│ │   Supported: .docx, .pdf, .txt          │   │
+│ │   Max size: 10MB                        │   │
+│ └──────────────────────────────────────────┘   │
+│                                                  │
+│ Processing Steps:                               │
+│ ✅ File uploaded                               │
+│ ✅ Text extracted (mammoth/pdf-lib)           │
+│ ⏳ Creating template...                        │
+│ ○  Ready for editing                          │
+│                                                  │
+│ [Cancel]                                        │
+└─────────────────────────────────────────────────┘
+```
+
+### Base64 Encoding Display
+```
+┌─────────────────────────────────────────────────┐
+│ Document Preview (Base64 Encoded)               │
+├─────────────────────────────────────────────────┤
+│ Format: DOCX                                    │
+│ Size: 245KB                                     │
+│ Encoding: Base64                                │
+│                                                  │
+│ [View Raw] [Download] [Convert to Template]    │
+└─────────────────────────────────────────────────┘
+```
+
+## Responsive Design Specifications
+
+### Breakpoint Behaviors
+| Component | Mobile (320-768px) | Tablet (768-1024px) | Desktop (1024px+) |
+|-----------|-------------------|---------------------|-------------------|
+| Navigation | Hamburger menu | Side drawer | Top bar |
+| Editor | Single column | Two columns | Three panels |
+| Variables | Bottom sheet | Side panel | Floating panel |
+| Toolbar | Condensed | Full | Full + shortcuts |
+
+### Touch Optimizations
+- **Minimum touch target**: 44x44px
+- **Swipe gestures**: Navigate between sections
+- **Pinch to zoom**: Document preview
+- **Long press**: Context menu
+
+## Performance Metrics & Monitoring
+
+### Key Performance Indicators
+```
+┌─────────────────────────────────────────────────┐
+│ Performance Dashboard                           │
+├─────────────────────────────────────────────────┤
+│ Core Web Vitals:                               │
+│ • LCP: 2.1s ✅ (Good < 2.5s)                  │
+│ • FID: 45ms ✅ (Good < 100ms)                 │
+│ • CLS: 0.08 ✅ (Good < 0.1)                   │
+│                                                 │
+│ Custom Metrics:                                 │
+│ • Template Load: 850ms avg                     │
+│ • Document Generation: 1.2s avg                │
+│ • Bulk Process: 15ms/doc                       │
+│                                                 │
+│ [View Details] [Export Report]                  │
+└─────────────────────────────────────────────────┘
+```
+
+## Security & Privacy UI
+
+### Data Privacy Controls
+```
+┌─────────────────────────────────────────────────┐
+│ Privacy Settings                                │
+├─────────────────────────────────────────────────┤
+│ Data Sharing:                                   │
+│ ○ Private (only you)                           │
+│ ● Team (your organization)                     │
+│ ○ Public (marketplace)                         │
+│                                                 │
+│ Document Retention:                            │
+│ [30 days ▼] after generation                   │
+│                                                 │
+│ Analytics:                                      │
+│ ☑ Allow usage analytics                       │
+│ ☐ Share anonymous data                        │
+│                                                 │
+│ [Save Preferences]                              │
+└─────────────────────────────────────────────────┘
+```
+
+## Audit Trail UI (audit_logs table)
+```
+┌─────────────────────────────────────────────────┐
+│ Activity Log                                    │
+├─────────────────────────────────────────────────┤
+│ Today                                           │
+│ • 10:45 AM - Template edited (v2.1)           │
+│ • 10:30 AM - Document generated (Contract.pdf) │
+│ • 09:15 AM - User logged in (IP: 192.168.1.1) │
+│                                                 │
+│ Yesterday                                       │
+│ • 04:22 PM - Template shared with team        │
+│ • 03:10 PM - Bulk generation (50 documents)   │
+│                                                 │
+│ [Load More] [Export CSV]                        │
+└─────────────────────────────────────────────────┘
+```
+
 ## Conclusion
 
-This design system provides a comprehensive foundation for the Smart Contract Document Template System, ensuring consistency, usability, and accessibility across all platforms while leveraging Supabase's authentication and real-time capabilities for a seamless user experience.
+This comprehensive UI/UX design specification provides a complete blueprint for the Smart Contract Document Template System, fully aligned with the Supabase backend infrastructure. The design ensures:
+
+1. **Complete Feature Coverage**: Every core feature from README.md has corresponding UI designs
+2. **Database Alignment**: UI components directly map to all 16 Supabase tables
+3. **Real-time Collaboration**: Leverages Supabase Realtime for live editing
+4. **Accessibility**: WCAG 2.1 AA compliant with full keyboard navigation
+5. **Performance**: Optimized for sub-3 second interactions
+6. **Responsive Design**: Seamless experience across all devices
+7. **Security**: Integrated Supabase Auth with MFA support
+
+The design system prioritizes user experience while maintaining technical feasibility, ensuring smooth implementation in the development phase.
