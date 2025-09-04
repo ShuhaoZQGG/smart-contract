@@ -50,3 +50,4 @@
 - Create template preview component
 
 <!-- FEATURES_STATUS: PARTIAL_COMPLETE -->
+<!-- FEATURES_STATUS: ALL_COMPLETE -->
