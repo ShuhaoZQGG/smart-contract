@@ -4,7 +4,7 @@
 
 ### Material Design 3 Components
 - **Primary Color**: #1976D2 (Blue) - Professional, trustworthy
-- **Secondary Color**: #00796B (Teal) - Growth, success  
+- **Secondary Color**: #00BCD4 (Cyan) - Modern, accessible
 - **Accent Color**: #8B5CF6 (Violet) - Premium features
 - **Variable Highlight**: #FFE082 (Amber-200) - Variable identification
 - **Error**: #F44336 (Red)
