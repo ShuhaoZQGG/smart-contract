@@ -4,10 +4,12 @@
 
 ### Brand Identity
 - **Primary Color**: #2563EB (Blue-600) - Trust, reliability
-- **Secondary Color**: #10B981 (Emerald-500) - Success, growth
+- **Secondary Color**: #10B981 (Emerald-500) - Success, growth  
 - **Accent Color**: #8B5CF6 (Violet-500) - Premium features
+- **Variable Highlight**: #FFE082 (Amber-200) - Variable identification
 - **Error**: #EF4444 (Red-500)
 - **Warning**: #F59E0B (Amber-500)
+- **Info**: #3B82F6 (Blue-500)
 - **Neutral Palette**: Gray scale (50-900)
 
 ### Typography
