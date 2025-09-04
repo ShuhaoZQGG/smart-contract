@@ -3,14 +3,14 @@
 ## Design System Foundation
 
 ### Material Design 3 Components
-- **Primary Color**: #1976D2 (Blue) - Professional, trustworthy
-- **Secondary Color**: #00BCD4 (Cyan) - Modern, accessible
-- **Accent Color**: #8B5CF6 (Violet) - Premium features
-- **Variable Highlight**: #FFE082 (Amber-200) - Variable identification
-- **Error**: #F44336 (Red)
-- **Warning**: #FF9800 (Orange)
-- **Success**: #4CAF50 (Green)
-- **Info**: #2196F3 (Light Blue)
+- **Primary Color**: #2563eb (Blue) - Professional, trustworthy
+- **Secondary Color**: #10b981 (Green) - Success, confirmation
+- **Accent Color**: #8b5cf6 (Violet) - Variables, premium features
+- **Variable Highlight**: #fbbf24 (Amber) - Variable identification
+- **Error**: #ef4444 (Red)
+- **Warning**: #f59e0b (Orange)
+- **Success**: #10b981 (Green)
+- **Info**: #3b82f6 (Light Blue)
 - **Neutral Palette**: Material Gray scale
 
 ### Typography
