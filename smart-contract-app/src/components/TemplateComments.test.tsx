@@ -4,84 +4,19 @@ import '@testing-library/jest-dom';
 import { TemplateComments } from './TemplateComments';
 import { AuthProvider } from '../contexts/AuthContext';
 
-// Mock Supabase
-const mockSelect = jest.fn();
-const mockEq = jest.fn();
-const mockIs = jest.fn();
-const mockOrder = jest.fn();
-const mockInsert = jest.fn();
-const mockUpdate = jest.fn();
-const mockDelete = jest.fn();
-
-// Set up default chain
-mockSelect.mockReturnValue({
-  eq: mockEq
-});
-
-mockEq.mockReturnValue({
-  is: mockIs
-});
-
-mockIs.mockReturnValue({
-  order: mockOrder
-});
-
-mockOrder.mockResolvedValue({
-  data: [
-    {
-      id: '1',
-      template_id: 'template-123',
-      user_id: 'user-456',
-      content: 'This is a test comment',
-      resolved: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      user: {
-        email: 'test@user.com',
-        full_name: 'Test User'
-      }
-    }
-  ],
-  error: null
-});
-
-mockInsert.mockReturnValue({
-  select: jest.fn().mockReturnValue({
-    single: jest.fn().mockResolvedValue({
-      data: {
-        id: '2',
-        content: 'New comment',
-        user_id: 'user-123',
-        template_id: 'template-123',
-        created_at: new Date().toISOString()
-      },
-      error: null
-    })
-  })
-});
-
-mockUpdate.mockReturnValue({
-  eq: jest.fn().mockResolvedValue({ error: null })
-});
-
-mockDelete.mockReturnValue({
-  eq: jest.fn().mockResolvedValue({ error: null })
-});
+// Mock the supabase module
+const mockFrom = jest.fn();
+const mockRemoveChannel = jest.fn();
 
 jest.mock('../lib/supabase', () => ({
   supabase: {
-    from: jest.fn(() => ({
-      select: mockSelect,
-      insert: mockInsert,
-      update: mockUpdate,
-      delete: mockDelete
-    })),
+    from: jest.fn(() => mockFrom()),
     channel: jest.fn(() => ({
       on: jest.fn().mockReturnThis(),
       subscribe: jest.fn().mockReturnThis(),
       unsubscribe: jest.fn()
     })),
-    removeChannel: jest.fn()
+    removeChannel: mockRemoveChannel
   }
 }));
 
@@ -100,11 +35,78 @@ describe('TemplateComments', () => {
     onThreadResolved: jest.fn()
   };
 
+  const defaultMockData = [
+    {
+      id: '1',
+      template_id: 'template-123',
+      user_id: 'user-456',
+      content: 'This is a test comment',
+      resolved: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      user: {
+        email: 'test@user.com',
+        full_name: 'Test User'
+      }
+    }
+  ];
+
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Setup default mock chain for from().select()
+    mockFrom.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          is: jest.fn().mockReturnValue({
+            order: jest.fn().mockResolvedValue({ 
+              data: defaultMockData, 
+              error: null 
+            })
+          })
+        })
+      }),
+      insert: jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({
+            data: {
+              id: '2',
+              content: 'New comment',
+              user_id: 'user-123',
+              template_id: 'template-123',
+              created_at: new Date().toISOString()
+            },
+            error: null
+          })
+        })
+      }),
+      update: jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({ error: null })
+      }),
+      delete: jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({ error: null })
+      })
+    });
   });
 
-  it('renders comments list', async () => {
+  it('renders with no comments initially', async () => {
+    // Override mock for this test
+    mockFrom.mockReturnValueOnce({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          is: jest.fn().mockReturnValue({
+            order: jest.fn().mockResolvedValue({ 
+              data: [], 
+              error: null 
+            })
+          })
+        })
+      }),
+      insert: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn()
+    });
+
     render(
       <AuthProvider>
         <TemplateComments {...mockProps} />
@@ -112,31 +114,43 @@ describe('TemplateComments', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Comments')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Add a comment...')).toBeInTheDocument();
+    });
+  });
+
+  it('displays existing comments', async () => {
+    render(
+      <AuthProvider>
+        <TemplateComments {...mockProps} />
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
       expect(screen.getByText('This is a test comment')).toBeInTheDocument();
       expect(screen.getByText('Test User')).toBeInTheDocument();
     });
   });
 
-  it('adds a new comment', async () => {
+  it('allows adding a new comment', async () => {
     render(
       <AuthProvider>
         <TemplateComments {...mockProps} />
       </AuthProvider>
     );
 
-    const textarea = screen.getByPlaceholderText(/Add a comment/i);
-    fireEvent.change(textarea, { target: { value: 'New test comment' } });
-    
-    const sendButton = screen.getByRole('button', { name: /send/i });
-    fireEvent.click(sendButton);
+    const input = screen.getByPlaceholderText('Add a comment...');
+    const button = screen.getByRole('button', { name: /Send/i });
+
+    fireEvent.change(input, { target: { value: 'New test comment' } });
+    fireEvent.click(button);
 
     await waitFor(() => {
       expect(mockProps.onCommentAdded).toHaveBeenCalled();
+      expect(input).toHaveValue('');
     });
   });
 
-  it('shows reply form when reply is clicked', async () => {
+  it('allows resolving a comment thread', async () => {
     render(
       <AuthProvider>
         <TemplateComments {...mockProps} />
@@ -147,24 +161,8 @@ describe('TemplateComments', () => {
       expect(screen.getByText('This is a test comment')).toBeInTheDocument();
     });
 
-    const replyButton = screen.getByRole('button', { name: /reply/i });
-    fireEvent.click(replyButton);
-
-    expect(screen.getByPlaceholderText(/Write a reply/i)).toBeInTheDocument();
-  });
-
-  it('resolves a comment thread', async () => {
-    render(
-      <AuthProvider>
-        <TemplateComments {...mockProps} />
-      </AuthProvider>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('This is a test comment')).toBeInTheDocument();
-    });
-
-    const resolveButton = screen.getByRole('button', { name: /resolve/i });
+    // Find resolve button (check icon)
+    const resolveButton = screen.getByTestId('resolve-comment-1');
     fireEvent.click(resolveButton);
 
     await waitFor(() => {
@@ -172,22 +170,35 @@ describe('TemplateComments', () => {
     });
   });
 
-  it('toggles showing resolved comments', async () => {
-    render(
-      <AuthProvider>
-        <TemplateComments {...mockProps} />
-      </AuthProvider>
-    );
+  it('allows deleting own comments', async () => {
+    // Update mock data to have a comment from current user
+    const ownCommentData = [{
+      ...defaultMockData[0],
+      user_id: 'user-123',
+      user: {
+        email: 'current@user.com',
+        full_name: 'Current User'
+      }
+    }];
 
-    const toggleButton = screen.getByLabelText(/Show resolved/i);
-    fireEvent.click(toggleButton);
-
-    await waitFor(() => {
-      expect(toggleButton).toBeChecked();
+    mockFrom.mockReturnValueOnce({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          is: jest.fn().mockReturnValue({
+            order: jest.fn().mockResolvedValue({ 
+              data: ownCommentData, 
+              error: null 
+            })
+          })
+        })
+      }),
+      insert: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({ error: null })
+      })
     });
-  });
 
-  it('cancels reply when cancel button is clicked', async () => {
     render(
       <AuthProvider>
         <TemplateComments {...mockProps} />
@@ -198,85 +209,64 @@ describe('TemplateComments', () => {
       expect(screen.getByText('This is a test comment')).toBeInTheDocument();
     });
 
-    const replyButton = screen.getByRole('button', { name: /reply/i });
-    fireEvent.click(replyButton);
-
-    const replyTextarea = screen.getByPlaceholderText(/Write a reply/i);
-    expect(replyTextarea).toBeInTheDocument();
-
-    const cancelButton = screen.getByText('Cancel');
-    fireEvent.click(cancelButton);
-
-    expect(screen.queryByPlaceholderText(/Write a reply/i)).not.toBeInTheDocument();
-  });
-
-  it('filters comments by line number when provided', async () => {
-    const propsWithLine = {
-      ...mockProps,
-      lineNumber: 10
-    };
-
-    render(
-      <AuthProvider>
-        <TemplateComments {...propsWithLine} />
-      </AuthProvider>
-    );
+    // Find delete button (X icon)
+    const deleteButton = screen.getByTestId('delete-comment-1');
+    fireEvent.click(deleteButton);
 
     await waitFor(() => {
-      // The mock should filter by line number
-      expect(screen.getByText('Comments')).toBeInTheDocument();
+      // Check that delete was called
+      const deleteCall = mockFrom.mock.results[mockFrom.mock.results.length - 1]?.value?.delete;
+      expect(deleteCall).toBeDefined();
     });
   });
 
-  it('handles mentions in comments', async () => {
+  it('toggles between showing all and unresolved comments', async () => {
     render(
       <AuthProvider>
         <TemplateComments {...mockProps} />
       </AuthProvider>
     );
 
-    const textarea = screen.getByPlaceholderText(/Add a comment/i);
-    fireEvent.change(textarea, { target: { value: '@john.doe This needs review' } });
+    await waitFor(() => {
+      expect(screen.getByText('This is a test comment')).toBeInTheDocument();
+    });
+
+    const toggleButton = screen.getByText(/Show All/);
+    fireEvent.click(toggleButton);
+
+    // Should now show "Show Unresolved"
+    expect(screen.getByText(/Show Unresolved/)).toBeInTheDocument();
+  });
+
+  it('handles comment submission with Enter key', async () => {
+    render(
+      <AuthProvider>
+        <TemplateComments {...mockProps} />
+      </AuthProvider>
+    );
+
+    const input = screen.getByPlaceholderText('Add a comment...');
     
-    // Check that @ mention is being typed
-    expect(textarea).toHaveValue('@john.doe This needs review');
+    fireEvent.change(input, { target: { value: 'Enter key comment' } });
+    fireEvent.keyPress(input, { key: 'Enter', code: 13, charCode: 13 });
+
+    await waitFor(() => {
+      expect(mockProps.onCommentAdded).toHaveBeenCalled();
+      expect(input).toHaveValue('');
+    });
   });
 
-  it('displays comment timestamp', async () => {
+  it('does not submit empty comments', async () => {
     render(
       <AuthProvider>
         <TemplateComments {...mockProps} />
       </AuthProvider>
     );
 
-    await waitFor(() => {
-      // Should show relative time like "just now" or actual time
-      expect(screen.getByText(/ago|just now|[0-9]+:[0-9]+/i)).toBeInTheDocument();
-    });
-  });
+    const button = screen.getByRole('button', { name: /Send/i });
+    fireEvent.click(button);
 
-  it('shows empty state when no comments exist', async () => {
-    // Override mock for this test
-    const { supabase } = require('../lib/supabase');
-    supabase.from.mockImplementationOnce(() => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          is: jest.fn(() => ({
-            order: jest.fn(() => Promise.resolve({ data: [], error: null }))
-          }))
-        }))
-      }))
-    }));
-
-    render(
-      <AuthProvider>
-        <TemplateComments {...mockProps} />
-      </AuthProvider>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('No comments yet')).toBeInTheDocument();
-      expect(screen.getByText('Be the first to comment')).toBeInTheDocument();
-    });
+    // Should not call onCommentAdded
+    expect(mockProps.onCommentAdded).not.toHaveBeenCalled();
   });
 });

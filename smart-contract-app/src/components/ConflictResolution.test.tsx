@@ -4,59 +4,19 @@ import '@testing-library/jest-dom';
 import { ConflictResolution } from './ConflictResolution';
 import { AuthProvider } from '../contexts/AuthContext';
 
-// Mock Supabase
-const mockSelect = jest.fn();
-const mockEq = jest.fn();
-const mockOrder = jest.fn();
-const mockUpdate = jest.fn();
-
-// Set up the chain for the default mock
-mockSelect.mockReturnValue({
-  eq: mockEq
-});
-
-mockEq.mockReturnValue({
-  eq: jest.fn().mockReturnValue({
-    order: mockOrder
-  })
-});
-
-mockOrder.mockResolvedValue({
-  data: [
-    {
-      id: '1',
-      template_id: 'template-123',
-      user_id: 'user-456',
-      conflict_type: 'edit',
-      original_content: { text: 'Original content' },
-      conflicting_content: { text: 'Conflicting content' },
-      resolved: false,
-      created_at: new Date().toISOString(),
-      user: {
-        email: 'other@user.com',
-        full_name: 'Other User'
-      }
-    }
-  ],
-  error: null
-});
-
-mockUpdate.mockReturnValue({
-  eq: jest.fn().mockResolvedValue({ error: null })
-});
+// Mock the supabase module
+const mockFrom = jest.fn();
+const mockRemoveChannel = jest.fn();
 
 jest.mock('../lib/supabase', () => ({
   supabase: {
-    from: jest.fn(() => ({
-      select: mockSelect,
-      update: mockUpdate
-    })),
+    from: jest.fn(() => mockFrom()),
     channel: jest.fn(() => ({
       on: jest.fn().mockReturnThis(),
       subscribe: jest.fn().mockReturnThis(),
       unsubscribe: jest.fn()
     })),
-    removeChannel: jest.fn()
+    removeChannel: mockRemoveChannel
   }
 }));
 
@@ -74,13 +34,61 @@ describe('ConflictResolution', () => {
     onConflictResolved: jest.fn()
   };
 
+  const defaultMockData = [
+    {
+      id: '1',
+      template_id: 'template-123',
+      user_id: 'user-456',
+      conflict_type: 'edit',
+      original_content: { text: 'Original content' },
+      conflicting_content: { text: 'Conflicting content' },
+      resolved: false,
+      created_at: new Date().toISOString(),
+      user: {
+        email: 'other@user.com',
+        full_name: 'Other User'
+      }
+    }
+  ];
+
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Setup default mock chain for from().select()
+    mockFrom.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            order: jest.fn().mockResolvedValue({ 
+              data: defaultMockData, 
+              error: null 
+            })
+          })
+        })
+      }),
+      update: jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({ error: null })
+      })
+    });
   });
 
   it('renders no conflicts state when empty', async () => {
     // Override mock for this test
-    mockOrder.mockResolvedValueOnce({ data: [], error: null });
+    mockFrom.mockReturnValueOnce({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            order: jest.fn().mockResolvedValue({ 
+              data: [], 
+              error: null 
+            })
+          })
+        })
+      }),
+      update: jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({ error: null })
+      })
+    });
 
     render(
       <AuthProvider>
