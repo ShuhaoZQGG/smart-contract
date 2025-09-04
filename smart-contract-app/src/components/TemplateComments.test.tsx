@@ -4,78 +4,11 @@ import '@testing-library/jest-dom';
 import { TemplateComments } from './TemplateComments';
 import { AuthProvider } from '../contexts/AuthContext';
 
-// Mock Supabase
+// Mock Supabase - must be hoisted properly
 jest.mock('../lib/supabase', () => {
-  // Default mock data
-  const defaultMockData = [
-    {
-      id: '1',
-      template_id: 'template-123',
-      user_id: 'user-456',
-      content: 'This is a test comment',
-      resolved: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      user: {
-        email: 'test@user.com',
-        full_name: 'Test User'
-      }
-    }
-  ];
-  
-  // Create chainable mock methods
-  const createChainableMock = (finalData: any) => {
-    const chainable: any = {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      is: jest.fn().mockReturnThis(),
-      order: jest.fn().mockReturnThis(),
-      insert: jest.fn(() => ({
-        select: jest.fn(() => ({
-          single: jest.fn(() => Promise.resolve({
-            data: {
-              id: '2',
-              content: 'New comment',
-              user_id: 'user-123',
-              template_id: 'template-123',
-              created_at: new Date().toISOString()
-            },
-            error: null
-          }))
-        }))
-      })),
-      update: jest.fn(() => ({
-        eq: jest.fn(() => Promise.resolve({ error: null }))
-      })),
-      delete: jest.fn(() => ({
-        eq: jest.fn(() => Promise.resolve({ error: null }))
-      }))
-    };
-    
-    // Handle the chain: select().eq().is().order()
-    chainable.select = jest.fn(() => ({
-      eq: jest.fn(() => ({
-        is: jest.fn(() => ({
-          order: jest.fn(() => Promise.resolve({ data: finalData, error: null }))
-        }))
-      }))
-    }));
-    
-    return chainable;
-  };
-  
   const mockSupabase = {
-    from: jest.fn((table: string) => {
-      if (table === 'template_comments') {
-        return createChainableMock(defaultMockData);
-      }
-      return createChainableMock([]);
-    }),
-    channel: jest.fn(() => ({
-      on: jest.fn().mockReturnThis(),
-      subscribe: jest.fn().mockReturnThis(),
-      unsubscribe: jest.fn()
-    })),
+    from: jest.fn(),
+    channel: jest.fn(),
     removeChannel: jest.fn()
   };
   
@@ -101,6 +34,70 @@ describe('TemplateComments', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Get the mocked supabase instance
+    const { supabase: mockSupabase } = require('../lib/supabase');
+    
+    // Default mock data
+    const defaultMockData = [
+      {
+        id: '1',
+        template_id: 'template-123',
+        user_id: 'user-456',
+        content: 'This is a test comment',
+        resolved: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        user: {
+          email: 'test@user.com',
+          full_name: 'Test User'
+        }
+      }
+    ];
+    
+    // Create chainable mock
+    const createChainableMock = (finalData: any) => ({
+      select: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          is: jest.fn(() => ({
+            order: jest.fn(() => Promise.resolve({ data: finalData, error: null }))
+          }))
+        }))
+      })),
+      insert: jest.fn(() => ({
+        select: jest.fn(() => ({
+          single: jest.fn(() => Promise.resolve({
+            data: {
+              id: '2',
+              content: 'New comment',
+              user_id: 'user-123',
+              template_id: 'template-123',
+              created_at: new Date().toISOString()
+            },
+            error: null
+          }))
+        }))
+      })),
+      update: jest.fn(() => ({
+        eq: jest.fn(() => Promise.resolve({ error: null }))
+      })),
+      delete: jest.fn(() => ({
+        eq: jest.fn(() => Promise.resolve({ error: null }))
+      }))
+    });
+    
+    mockSupabase.from.mockImplementation((table: string) => {
+      if (table === 'template_comments') {
+        return createChainableMock(defaultMockData);
+      }
+      return createChainableMock([]);
+    });
+    
+    mockSupabase.channel.mockReturnValue({
+      on: jest.fn().mockReturnThis(),
+      subscribe: jest.fn().mockReturnThis(),
+      unsubscribe: jest.fn()
+    });
   });
 
   it('renders comments list', async () => {
