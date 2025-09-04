@@ -7,41 +7,56 @@ import { AuthProvider } from '../contexts/AuthContext';
 // Mock Supabase
 const mockSelect = jest.fn();
 const mockEq = jest.fn();
+const mockEqChained = jest.fn();
 const mockIs = jest.fn();
 const mockOrder = jest.fn();
 const mockInsert = jest.fn();
 const mockUpdate = jest.fn();
 const mockDelete = jest.fn();
 
-// Set up default chain
-mockSelect.mockReturnValue({
-  eq: mockEq
-});
-
-mockEq.mockReturnValue({
-  is: mockIs
-});
-
-mockIs.mockReturnValue({
-  order: mockOrder
-});
-
-mockOrder.mockResolvedValue({
-  data: [
-    {
-      id: '1',
-      template_id: 'template-123',
-      user_id: 'user-456',
-      content: 'This is a test comment',
-      resolved: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      user: {
-        email: 'test@user.com',
-        full_name: 'Test User'
-      }
+// Default mock data
+const defaultMockData = [
+  {
+    id: '1',
+    template_id: 'template-123',
+    user_id: 'user-456',
+    content: 'This is a test comment',
+    resolved: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    user: {
+      email: 'test@user.com',
+      full_name: 'Test User'
     }
-  ],
+  }
+];
+
+// Set up default chain
+mockSelect.mockImplementation(() => ({
+  eq: mockEq
+}));
+
+mockEq.mockImplementation(() => ({
+  is: mockIs
+}));
+
+mockIs.mockImplementation(() => ({
+  order: mockOrder
+}));
+
+// The order method returns either a promise or a chainable object
+mockOrder.mockImplementation(() => {
+  // Create a chainable mock that also resolves as a promise
+  const chainable: any = {
+    eq: mockEqChained,
+    then: (resolve: any) => resolve({ data: defaultMockData, error: null })
+  };
+  return chainable;
+});
+
+// For when eq is called after order (for showResolved filter)
+mockEqChained.mockResolvedValue({
+  data: defaultMockData,
   error: null
 });
 
