@@ -43,18 +43,30 @@ jest.mock('../lib/supabase', () => {
   
   return {
     supabase: {
-      from: jest.fn(() => ({
-        select: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            eq: jest.fn(() => ({
-              order: jest.fn(() => Promise.resolve({ data: mockData, error: null }))
+      from: jest.fn((table: string) => {
+        if (table === 'collaboration_conflicts') {
+          return {
+            select: jest.fn(() => ({
+              eq: jest.fn(() => ({
+                eq: jest.fn(() => ({
+                  order: jest.fn(() => Promise.resolve({ data: mockData, error: null }))
+                }))
+              }))
+            })),
+            update: jest.fn(() => ({
+              eq: jest.fn(() => Promise.resolve({ error: null }))
             }))
+          };
+        }
+        return {
+          select: jest.fn(() => ({
+            eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
+          })),
+          update: jest.fn(() => ({
+            eq: jest.fn(() => Promise.resolve({ error: null }))
           }))
-        })),
-        update: jest.fn(() => ({
-          eq: jest.fn(() => Promise.resolve({ error: null }))
-        }))
-      })),
+        };
+      }),
       channel: jest.fn(() => ({
         on: jest.fn().mockReturnThis(),
         subscribe: jest.fn().mockReturnThis(),
@@ -86,15 +98,24 @@ describe('ConflictResolution', () => {
   it('renders no conflicts state when empty', async () => {
     // Override mock for this test
     const { supabase } = require('../lib/supabase');
-    supabase.from.mockImplementationOnce(() => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            order: jest.fn(() => Promise.resolve({ data: [], error: null }))
+    supabase.from.mockImplementationOnce((table: string) => {
+      if (table === 'collaboration_conflicts') {
+        return {
+          select: jest.fn(() => ({
+            eq: jest.fn(() => ({
+              eq: jest.fn(() => ({
+                order: jest.fn(() => Promise.resolve({ data: [], error: null }))
+              }))
+            }))
           }))
+        };
+      }
+      return {
+        select: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
         }))
-      }))
-    }));
+      };
+    });
 
     render(
       <AuthProvider>

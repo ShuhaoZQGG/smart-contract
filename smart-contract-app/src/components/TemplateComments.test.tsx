@@ -85,12 +85,21 @@ mockDelete.mockReturnValue({
 
 jest.mock('../lib/supabase', () => ({
   supabase: {
-    from: jest.fn(() => ({
-      select: mockSelect,
-      insert: mockInsert,
-      update: mockUpdate,
-      delete: mockDelete
-    })),
+    from: jest.fn((table: string) => {
+      if (table === 'template_comments') {
+        return {
+          select: mockSelect,
+          insert: mockInsert,
+          update: mockUpdate,
+          delete: mockDelete
+        };
+      }
+      return {
+        select: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
+        }))
+      };
+    }),
     channel: jest.fn(() => ({
       on: jest.fn().mockReturnThis(),
       subscribe: jest.fn().mockReturnThis(),
