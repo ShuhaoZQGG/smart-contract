@@ -170,8 +170,16 @@ describe('AdvancedVariables', () => {
     fireEvent.click(addButton);
     
     await waitFor(() => {
-      expect(mockProps.onAdvancedVariableUpdate).toHaveBeenCalled();
-    });
+      expect(mockProps.onAdvancedVariableUpdate).toHaveBeenCalledWith([
+        {
+          id: '123',
+          type: 'computed',
+          computation_formula: 'test formula',
+          template_id: 'template-123',
+          base_variable_id: '2'
+        }
+      ]);
+    }, { timeout: 3000 });
   });
 
   it('displays variable type indicators', () => {
