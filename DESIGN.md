@@ -1,13 +1,15 @@
 # Smart Contract Document Template System - UI/UX Design Specifications
 
-## Design System Foundation
+## Design System Overview
 
-### Material Design 3 Components
-- **Primary Color**: #1976D2 (Blue) - Professional, trustworthy
-- **Secondary Color**: #00BCD4 (Cyan) - Modern, accessible
-- **Accent Color**: #8B5CF6 (Violet) - Premium features
-- **Variable Highlight**: #FFE082 (Amber-200) - Variable identification
-- **Error**: #F44336 (Red)
+### Brand Identity
+- **Primary Color**: #6366F1 (Indigo)
+- **Secondary Color**: #10B981 (Emerald)  
+- **Accent Color**: #F59E0B (Amber)
+- **Error**: #EF4444
+- **Success**: #10B981
+- **Warning**: #F59E0B
+- **Info**: #3B82F6
 - **Warning**: #FF9800 (Orange)
 - **Success**: #4CAF50 (Green)
 - **Info**: #2196F3 (Light Blue)
