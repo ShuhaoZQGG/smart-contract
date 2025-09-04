@@ -6,35 +6,41 @@ import { supabase } from '../lib/supabase';
 
 // Mock Supabase
 jest.mock('../lib/supabase', () => {
+  const mockSelectChain = {
+    eq: jest.fn().mockReturnThis(),
+    select: jest.fn().mockReturnThis(),
+    single: jest.fn()
+  };
+  
   const createChainableMock = (table: string) => {
     if (table === 'advanced_variables') {
       return {
-        select: jest.fn(() => ({
-          eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
-        })),
-        insert: jest.fn(() => ({
-          select: jest.fn(() => ({
-            single: jest.fn(() => Promise.resolve({ 
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockResolvedValue({ data: [], error: null })
+        }),
+        insert: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({ 
               data: {
                 id: '123',
                 type: 'computed',
-                computation_formula: '{{base}} * {{rate}}', // Match what the test sets
+                computation_formula: '{{base}} * {{rate}}',
                 template_id: 'template-123',
-                variable_id: '2' // Changed from base_variable_id to variable_id
+                variable_id: '2'
               }, 
               error: null 
-            }))
-          }))
-        })),
-        delete: jest.fn(() => ({
-          eq: jest.fn(() => Promise.resolve({ data: null, error: null }))
-        }))
+            })
+          })
+        }),
+        delete: jest.fn().mockReturnValue({
+          eq: jest.fn().mockResolvedValue({ data: null, error: null })
+        })
       };
     }
     return {
-      select: jest.fn(() => ({
-        eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
-      }))
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({ data: [], error: null })
+      })
     };
   };
   
