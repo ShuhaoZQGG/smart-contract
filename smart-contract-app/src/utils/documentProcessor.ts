@@ -1,8 +1,4 @@
-import mammoth from 'mammoth';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-import Docxtemplater from 'docxtemplater';
-import PizZip from 'pizzip';
-
+// Dynamic imports for heavy libraries to reduce bundle size
 interface ProcessingResult {
   success: boolean;
   content?: string;
@@ -19,6 +15,8 @@ interface ProcessingResult {
  */
 export const extractTextFromDocx = async (file: File | Blob): Promise<ProcessingResult> => {
   try {
+    // Dynamic import mammoth only when needed
+    const mammoth = await import('mammoth');
     const arrayBuffer = await file.arrayBuffer();
     const result = await mammoth.extractRawText({ arrayBuffer });
     
@@ -46,6 +44,12 @@ export const generateDocxFromTemplate = async (
   variables: Record<string, string>
 ): Promise<ProcessingResult> => {
   try {
+    // Dynamic import for document generation libraries
+    const [{ default: PizZip }, { default: Docxtemplater }] = await Promise.all([
+      import('pizzip'),
+      import('docxtemplater')
+    ]);
+    
     const zip = new PizZip(templateContent);
     const doc = new Docxtemplater(zip, {
       paragraphLoop: true,
@@ -91,6 +95,9 @@ export const generatePdfFromText = async (
   }
 ): Promise<ProcessingResult> => {
   try {
+    // Dynamic import pdf-lib only when needed
+    const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib');
+    
     // Create a new PDF document
     const pdfDoc = await PDFDocument.create();
     
@@ -156,6 +163,9 @@ export const generatePdfFromText = async (
  */
 export const convertHtmlToPdf = async (htmlContent: string): Promise<ProcessingResult> => {
   try {
+    // Dynamic import pdf-lib only when needed
+    const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib');
+    
     // Create a new PDF document
     const pdfDoc = await PDFDocument.create();
     
