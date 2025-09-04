@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 import { AdvancedVariables } from './AdvancedVariables';
 import { supabase } from '../lib/supabase';
 
-// Mock Supabase
+// Mock Supabase - note the direct export, not nested under 'supabase'
 jest.mock('../lib/supabase', () => {
   const createChainableMock = (table: string) => {
     if (table === 'advanced_variables') {
