@@ -50,20 +50,21 @@ jest.mock('../lib/supabase', () => {
       update: jest.fn().mockReturnThis()
     };
     
-    // Override methods that need to return promises
-    chainable.order = jest.fn(() => Promise.resolve({ data: finalData, error: null }));
-    chainable.update = jest.fn().mockReturnThis();
-    chainable.eq = jest.fn((key: string, value: any) => {
-      if (chainable._eqCount === undefined) chainable._eqCount = 0;
-      chainable._eqCount++;
-      if (chainable._eqCount === 2) {
-        // After second eq, return order method that returns promise
-        return {
-          order: jest.fn(() => Promise.resolve({ data: finalData, error: null }))
-        };
-      }
-      return chainable;
+    // Chain select properly
+    chainable.select = jest.fn(() => {
+      return {
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            order: jest.fn(() => Promise.resolve({ data: finalData, error: null }))
+          }))
+        }))
+      };
     });
+    
+    // Update method chain
+    chainable.update = jest.fn(() => ({
+      eq: jest.fn(() => Promise.resolve({ data: finalData, error: null }))
+    }));
     
     return chainable;
   };

@@ -53,13 +53,21 @@ jest.mock('../lib/supabase', () => {
     };
     
     // Handle the chain: select().eq().is().order() or select().eq().is().order().eq()
-    chainable.is = jest.fn(() => ({
-      order: jest.fn(() => {
-        // Return either a promise or chainable with eq for filtered results
-        const result: any = Promise.resolve({ data: finalData, error: null });
-        result.eq = jest.fn(() => Promise.resolve({ data: finalData, error: null }));
-        return result;
-      })
+    chainable.select = jest.fn(() => ({
+      eq: jest.fn(() => ({
+        is: jest.fn(() => ({
+          order: jest.fn(() => {
+            // Return a thenable object that also has an eq method
+            const result: any = { 
+              data: finalData, 
+              error: null,
+              then: (fn: any) => Promise.resolve({ data: finalData, error: null }).then(fn)
+            };
+            result.eq = jest.fn(() => Promise.resolve({ data: finalData, error: null }));
+            return result;
+          })
+        }))
+      }))
     }));
     
     return chainable;
