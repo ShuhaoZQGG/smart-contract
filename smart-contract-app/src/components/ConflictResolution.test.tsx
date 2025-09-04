@@ -23,7 +23,7 @@ const defaultMockData = [
 ];
 
 // Mock Supabase
-jest.mock('../lib/supabase', () => {
+const mockSupabaseClient = (() => {
   const mockData = [
     {
       id: '1',
@@ -41,40 +41,30 @@ jest.mock('../lib/supabase', () => {
     }
   ];
   
-  // Create chainable mock methods
-  const createChainableMock = (finalData: any) => {
-    const chainable: any = {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      order: jest.fn().mockReturnThis(),
-      update: jest.fn().mockReturnThis()
-    };
-    
-    // Chain select properly
-    chainable.select = jest.fn(() => {
-      return {
+  // Create proper chainable mock
+  const createQueryChain = (data: any) => {
+    const chain = {
+      select: jest.fn(() => ({
         eq: jest.fn(() => ({
           eq: jest.fn(() => ({
-            order: jest.fn(() => Promise.resolve({ data: finalData, error: null }))
+            order: jest.fn(() => Promise.resolve({ data, error: null }))
           }))
         }))
-      };
-    });
+      })),
+      update: jest.fn(() => ({
+        eq: jest.fn(() => Promise.resolve({ data, error: null }))
+      }))
+    };
     
-    // Update method chain
-    chainable.update = jest.fn(() => ({
-      eq: jest.fn(() => Promise.resolve({ data: finalData, error: null }))
-    }));
-    
-    return chainable;
+    return chain;
   };
   
-  const mockSupabase = {
+  return {
     from: jest.fn((table: string) => {
       if (table === 'collaboration_conflicts') {
-        return createChainableMock(mockData);
+        return createQueryChain(mockData);
       }
-      return createChainableMock([]);
+      return createQueryChain([]);
     }),
     channel: jest.fn(() => ({
       on: jest.fn().mockReturnThis(),
@@ -83,11 +73,11 @@ jest.mock('../lib/supabase', () => {
     })),
     removeChannel: jest.fn()
   };
-  
-  return {
-    supabase: mockSupabase
-  };
-});
+})();
+
+jest.mock('../lib/supabase', () => ({
+  supabase: mockSupabaseClient
+}));
 
 // Mock useAuth
 jest.mock('../contexts/AuthContext', () => ({
@@ -109,22 +99,17 @@ describe('ConflictResolution', () => {
 
   it('renders no conflicts state when empty', async () => {
     // Override mock for this test
-    const { supabase } = require('../lib/supabase');
-    supabase.from.mockImplementationOnce((table: string) => {
-      if (table === 'collaboration_conflicts') {
-        return {
-          select: jest.fn(() => ({
-            eq: jest.fn(() => ({
-              eq: jest.fn(() => ({
-                order: jest.fn(() => Promise.resolve({ data: [], error: null }))
-              }))
-            }))
-          }))
-        };
-      }
+    mockSupabaseClient.from.mockImplementationOnce((table: string) => {
       return {
         select: jest.fn(() => ({
-          eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
+          eq: jest.fn(() => ({
+            eq: jest.fn(() => ({
+              order: jest.fn(() => Promise.resolve({ data: [], error: null }))
+            }))
+          }))
+        })),
+        update: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ data: null, error: null }))
         }))
       };
     });
