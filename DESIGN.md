@@ -1,355 +1,366 @@
-# Smart Contract UI/UX Design Specifications
+# Smart Contract Document Template System - UI/UX Design Specifications
 
 ## Design System
 
-### Theme & Color Palette
-- **Primary**: #2563EB (Blue) - Actions, CTAs
-- **Secondary**: #7C3AED (Purple) - Variables, premium
-- **Success**: #10B981 (Green) - Confirmations
-- **Warning**: #F59E0B (Amber) - Alerts
-- **Error**: #EF4444 (Red) - Errors
-- **Background**: #FFFFFF / #1F2937 (Dark mode)
-- **Surface**: #F9FAFB / #111827 (Dark mode)
+### Theme Foundation
+- **Framework**: Material Design 3
+- **Primary Color**: #1976D2 (Blue 600)
+- **Secondary Color**: #26A69A (Teal 400)
+- **Error**: #F44336 (Red 500)
+- **Warning**: #FF9800 (Orange 500)
+- **Success**: #4CAF50 (Green 500)
+- **Typography**: Inter (headings), Roboto (body)
+- **Border Radius**: 8px (cards), 4px (buttons)
+- **Shadow System**: Material elevation 0-24
 
-### Typography
-- **Font**: Inter (UI), JetBrains Mono (Variables)
-- **H1**: 32px Semi-bold
-- **H2**: 24px Semi-bold
-- **Body**: 14px Regular
+### Responsive Breakpoints
+- Mobile: 320px - 768px
+- Tablet: 768px - 1024px
+- Desktop: 1024px - 1440px
+- Large: 1440px+
 
-### Spacing
-- **Base**: 8px grid
-- **Container**: 1280px max
-- **Mobile**: 0-639px
-- **Tablet**: 640-1023px
-- **Desktop**: 1024px+
+## Core User Journeys
 
-## User Journeys
-
-### 1. First-Time User
-Landing → Supabase Auth → Dashboard → Template Creation Tutorial
-
-### 2. Template Creation
-Upload → Visual Editor → Insert {{variables}} → Save → Version Control
-
-### 3. Document Generation
-Select Template → Fill Variables → Preview → Generate (PDF/DOCX) → Download
-
-### 4. Bulk Generation
-Template → Upload CSV → Map Columns → Process → Download ZIP
-
-### 5. Collaboration
-Share → Real-time Edit → Comments → Conflict Resolution → Merge
-
-### 6. Marketplace
-Browse → Preview → Clone/Purchase → Customize → Use
-
-## Core Interfaces
-
-### Authentication (Supabase Auth)
+### 1. Template Creation Flow
 ```
-┌─────────────────────────────┐
-│     Smart Contract          │
-├─────────────────────────────┤
-│ [Sign In] [Sign Up]        │
-│                            │
-│ Email: [_____________]     │
-│ Password: [__________]     │
-│                            │
-│ [Continue] [OAuth Login]   │
-│ [Forgot Password?]         │
-└─────────────────────────────┘
+Upload → Extract → Edit Variables → Preview → Save
 ```
+
+**Upload Page**
+- Drag-and-drop zone (full viewport on mobile)
+- File type badges (DOCX, PDF, TXT)
+- Progress bar with percentage
+- Format preservation indicator
+- Quick action: "Use Sample Template"
+
+**Variable Editor**
+- Split view: Source | Live Preview
+- Variable insertion toolbar
+- {{variable}} syntax highlighting
+- Auto-complete dropdown
+- Variable sidebar with drag-to-insert
+- Mobile: Tabbed view (Edit/Preview)
+
+**Variable Management Panel**
+- Variable list with types
+- Quick actions: Edit, Delete, Reorder
+- Validation rules editor
+- Default values input
+- Required field toggle
+
+### 2. Document Generation Flow
+```
+Select Template → Fill Variables → Preview → Export
+```
+
+**Template Selection**
+- Grid view (3 cols desktop, 1 col mobile)
+- Template cards with:
+  - Preview thumbnail
+  - Title & description
+  - Variable count badge
+  - Last used timestamp
+  - Quick generate button
+
+**Generation Form**
+- Smart form layout
+- Variable grouping by sections
+- Input validation indicators
+- Progress save (auto-save every 30s)
+- Bulk upload CSV option
+- Mobile: Single column with sticky submit
+
+**Preview & Export**
+- Full document preview
+- Variable highlight toggle
+- Export format selector (PDF/DOCX)
+- Email delivery option
+- Download queue for bulk
+
+### 3. Collaboration Interface
+```
+Real-time Edit → Presence → Comments → Resolve
+```
+
+**Editor Presence**
+- User avatars in toolbar
+- Cursor colors per user
+- "User is typing..." indicators
+- Active section highlights
+- Participant list drawer
+
+**Commenting System**
+- Inline comment threads
+- @mention autocomplete
+- Resolve/Reopen actions
+- Activity timeline
+- Mobile: Bottom sheet comments
+
+**Conflict Resolution**
+- Side-by-side diff view
+- Accept/Reject buttons
+- Merge preview
+- Version rollback option
+- Auto-save conflict copies
+
+## Page Layouts
 
 ### Dashboard
 ```
-┌──────────────────────────────────────────────┐
-│ [Logo] Templates  Marketplace  Docs  [User]  │
-├──────────────────────────────────────────────┤
-│                                              │
-│ Welcome back!                               │
-│ [+ New Template] [Import] [Browse Gallery]  │
-│                                              │
-│ Recent Templates                            │
-│ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐      │
-│ │ Doc1 │ │ Doc2 │ │ Doc3 │ │ Doc4 │      │
-│ └──────┘ └──────┘ └──────┘ └──────┘      │
-│                                              │
-│ Activity Feed                               │
-│ • John edited "Contract v2" (2m ago)       │
-│ • Sarah generated 15 documents (1h ago)    │
-└──────────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│ Nav | Smart Contract                [+] │
+├─────┼───────────────────────────────────┤
+│ S   │ Welcome back, {{user_name}}       │
+│ i   │                                   │
+│ d   │ Quick Actions                     │
+│ e   │ [Upload] [Create] [Generate]      │
+│ b   │                                   │
+│ a   │ Recent Templates        View All > │
+│ r   │ ┌──────┐ ┌──────┐ ┌──────┐      │
+│     │ │      │ │      │ │      │      │
+│ T   │ │ Card │ │ Card │ │ Card │      │
+│ e   │ │      │ │      │ │      │      │
+│ m   │ └──────┘ └──────┘ └──────┘      │
+│ p   │                                   │
+│ l   │ Analytics Overview                │
+│ a   │ ┌────────────────────────────┐    │
+│ t   │ │ 📊 Usage Chart             │    │
+│ e   │ └────────────────────────────┘    │
+│ s   │                                   │
+│     │ Recent Activity                   │
+│ M   │ • John edited "Contract v2"      │
+│ a   │ • Sarah generated 5 documents    │
+│ r   │ • New comment on "Invoice"       │
+│ k   │                                   │
+└─────┴───────────────────────────────────┘
 ```
 
-### Template Editor (Lexical Rich Text)
+### Template Editor
 ```
-┌──────────────────────────────────────────────────┐
-│ Template Name: [________________] [Save] [Share] │
-├──────────────────────────────────────────────────┤
-│ [B][I][U] [Link] [List] [{{}}] [Undo][Redo]     │
-├──────────────────────────────────────────────────┤
-│                                                  │
-│ Loan Agreement                                  │
-│                                                  │
-│ This agreement between {{bank_name}} and       │
-│ {{client_name}} for {{loan_amount}}.           │
-│                                                  │
-│ Interest Rate: {{interest_rate}}%              │
-│ Due Date: {{due_date}}                         │
-│                                                  │
-├──────────────────────────────────────────────────┤
-│ Variables (5):                                  │
-│ • bank_name (text)                             │
-│ • client_name (text)                           │
-│ • loan_amount (number)                         │
-│ • interest_rate (number)                       │
-│ • due_date (date)                              │
-└──────────────────────────────────────────────────┘
-```
-
-### Variable Input Form
-```
-┌─────────────────────────────────┐
-│ Generate Document               │
-├─────────────────────────────────┤
-│ Template: Loan Agreement v2     │
-│                                │
-│ Bank Name:                     │
-│ [______________________]       │
-│                                │
-│ Client Name:                   │
-│ [______________________]       │
-│                                │
-│ Loan Amount:                   │
-│ [$___________________]         │
-│                                │
-│ Interest Rate:                 │
-│ [____]%                        │
-│                                │
-│ Due Date:                      │
-│ [📅 MM/DD/YYYY]                │
-│                                │
-│ [Preview] [Generate PDF] [DOCX]│
-└─────────────────────────────────┘
-```
-
-### Bulk Generation
-```
-┌──────────────────────────────────────────┐
-│ Bulk Document Generation                 │
-├──────────────────────────────────────────┤
-│ Template: [Select Template ▼]            │
-│                                          │
-│ Upload CSV:                              │
-│ ┌────────────────────────────┐          │
-│ │ Drop CSV file here or      │          │
-│ │ [Browse Files]              │          │
-│ └────────────────────────────┘          │
-│                                          │
-│ Column Mapping:                          │
-│ CSV Column → Template Variable          │
-│ [column1 ▼] → {{bank_name}}            │
-│ [column2 ▼] → {{client_name}}          │
-│                                          │
-│ Preview (First 3 rows)                  │
-│ ┌─────────────────────────┐             │
-│ │ Row 1: First National...│             │
-│ │ Row 2: City Bank...     │             │
-│ │ Row 3: State Credit...  │             │
-│ └─────────────────────────┘             │
-│                                          │
-│ [Cancel] [Generate All]                  │
-└──────────────────────────────────────────┘
-```
-
-### Real-time Collaboration
-```
-┌────────────────────────────────────────────┐
-│ Editing: Contract Template                 │
-│ [👤 John] [👤 Sarah] [👤 Mike] (3 active) │
-├────────────────────────────────────────────┤
-│                                            │
-│ Document content with live cursors:        │
-│ This is a |John typing...                  │
-│                                            │
-│ {{client_name}} agrees to |Sarah editing.. │
-│                                            │
-├────────────────────────────────────────────┤
-│ Comments (5)                              │
-│ Sarah: Should we add payment terms here?   │
-│ └─ John: Yes, good idea                   │
-└────────────────────────────────────────────┘
-```
-
-### Conflict Resolution
-```
-┌──────────────────────────────────┐
-│ Merge Conflict Detected          │
-├──────────────────────────────────┤
-│ Your Version:                    │
-│ "Payment due in 30 days"        │
-│                                  │
-│ Sarah's Version:                 │
-│ "Payment due in 45 days"        │
-│                                  │
-│ [Use Mine] [Use Theirs] [Merge] │
-└──────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│ ← Back | Template Name        [Save] 👥 │
+├─────────────────────────────────────────┤
+│ Toolbar: B I U | {{}} | 🔗 | ≡ | ↶ ↷  │
+├─────────────────────────────────────────┤
+│         │                    │          │
+│ Editor  │                    │ Variables│
+│         │                    │          │
+│ Content │                    │ • name   │
+│ with    │                    │ • date   │
+│ {{vars}}│                    │ • amount │
+│         │                    │          │
+│         │                    │ [+ Add]  │
+├─────────┴────────────────────┴──────────┤
+│ 💬 Comments (3)  📊 Analytics  ⚙️ Settings│
+└─────────────────────────────────────────┘
 ```
 
 ### Template Marketplace
 ```
-┌─────────────────────────────────────────────┐
-│ Template Marketplace                        │
-│ [Search...] [Categories ▼] [Sort: Popular]  │
-├─────────────────────────────────────────────┤
-│                                             │
-│ ┌───────────┐ ┌───────────┐ ┌───────────┐ │
-│ │ Contract  │ │ Invoice   │ │ NDA       │ │
-│ │ ⭐ 4.8    │ │ ⭐ 4.9    │ │ ⭐ 4.7    │ │
-│ │ 1.2k uses │ │ 890 uses  │ │ 650 uses  │ │
-│ │ $9.99     │ │ Free      │ │ $14.99    │ │
-│ │ [Preview] │ │ [Clone]   │ │ [Buy]     │ │
-│ └───────────┘ └───────────┘ └───────────┘ │
-│                                             │
-│ Categories: Legal | Business | Personal     │
-└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│ Marketplace     🔍 Search    [Filters]  │
+├─────────────────────────────────────────┤
+│ Categories: All | Legal | Sales | HR    │
+├─────────────────────────────────────────┤
+│ ┌──────────┐ ┌──────────┐ ┌──────────┐│
+│ │ Template │ │ Template │ │ Template ││
+│ │  ⭐4.5   │ │  ⭐4.8   │ │  ⭐4.2   ││
+│ │ $9.99    │ │ FREE     │ │ $14.99   ││
+│ │ [Clone]  │ │ [Clone]  │ │ [Clone]  ││
+│ └──────────┘ └──────────┘ └──────────┘│
+│                                         │
+│ ┌──────────┐ ┌──────────┐ ┌──────────┐│
+│ │ Template │ │ Template │ │ Template ││
+│ │  ⭐4.7   │ │  ⭐4.9   │ │  ⭐3.9   ││
+│ │ $19.99   │ │ $4.99    │ │ FREE     ││
+│ │ [Clone]  │ │ [Clone]  │ │ [Clone]  ││
+│ └──────────┘ └──────────┘ └──────────┘│
+└─────────────────────────────────────────┘
 ```
 
-### Version History
-```
-┌──────────────────────────────────┐
-│ Version History                  │
-├──────────────────────────────────┤
-│ Current: v5 (Auto-saved)         │
-│                                  │
-│ v4 - 2h ago by John             │
-│ "Added payment terms"            │
-│ [View] [Restore]                │
-│                                  │
-│ v3 - Yesterday by Sarah         │
-│ "Updated interest rates"         │
-│ [View] [Compare] [Restore]      │
-│                                  │
-│ v2 - 3 days ago                 │
-│ "Initial template"               │
-│ [View] [Compare]                │
-└──────────────────────────────────┘
-```
+## Component Library
 
-### Analytics Dashboard
-```
-┌────────────────────────────────────────┐
-│ Template Analytics                     │
-├────────────────────────────────────────┤
-│ Usage This Month: 📊                  │
-│ ┌────────────────────────┐            │
-│ │ Views: 450             │            │
-│ │ Generated: 125         │            │
-│ │ Shared: 32             │            │
-│ └────────────────────────┘            │
-│                                        │
-│ Popular Variables:                    │
-│ • client_name (100%)                  │
-│ • amount (95%)                        │
-│ • date (89%)                          │
-│                                        │
-│ User Feedback:                        │
-│ ⭐ 4.7/5 (23 reviews)                 │
-└────────────────────────────────────────┘
-```
+### Buttons
+- **Primary**: Filled, elevation 2
+- **Secondary**: Outlined, no elevation
+- **Text**: No border, ripple effect
+- **FAB**: Circular, elevation 6
+- **States**: Default, Hover (+elevation), Active, Disabled (opacity 0.38)
 
-## Responsive Design
+### Cards
+- **Template Card**
+  - 16px padding
+  - Elevation 1 (hover: 4)
+  - Preview image 16:9
+  - Title (16px, semibold)
+  - Metadata (12px, muted)
 
-### Mobile (320-639px)
-- Single column layout
-- Bottom navigation
-- Swipeable template cards
-- Simplified editor toolbar
-- Touch-optimized variable insertion
+### Forms
+- **Input Fields**
+  - Outlined variant
+  - Floating labels
+  - Helper text below
+  - Error states with messages
+  - Character counter for text
 
-### Tablet (640-1023px)
-- 2-column grid for templates
-- Side panel for variables
-- Collapsible navigation
-- Touch gestures support
+### Data Tables
+- **Document List**
+  - Sticky header
+  - Sortable columns
+  - Row hover states
+  - Inline actions
+  - Pagination controls
 
-### Desktop (1024px+)
-- Full feature set
-- Multi-panel layouts
-- Keyboard shortcuts
-- Advanced editing tools
+## Interaction Patterns
+
+### Gestures (Mobile)
+- **Swipe left**: Delete/Archive
+- **Swipe right**: Share/Export
+- **Pull to refresh**: Update lists
+- **Long press**: Multi-select
+- **Pinch**: Zoom preview
+
+### Animations
+- **Page transitions**: Slide (300ms)
+- **Card hover**: Elevation change (200ms)
+- **Loading**: Skeleton screens
+- **Success**: Checkmark animation
+- **Micro-interactions**: Button ripples
+
+### Feedback
+- **Toast notifications**: Bottom (mobile), top-right (desktop)
+- **Progress indicators**: Linear for uploads, circular for processing
+- **Empty states**: Illustrations with CTAs
+- **Error boundaries**: Friendly error messages
 
 ## Accessibility (WCAG 2.1 AA)
 
+### Visual
+- **Color contrast**: 4.5:1 minimum
+- **Focus indicators**: 2px outline
+- **Text sizing**: Base 16px, scalable
+- **Icons**: Always with labels or tooltips
+
 ### Keyboard Navigation
-- Tab order logical flow
-- Focus indicators visible
-- Shortcuts documented
-- Skip links provided
+- **Tab order**: Logical flow
+- **Skip links**: "Skip to content"
+- **Shortcuts**: Documented hotkeys
+- **Focus trap**: Modals and drawers
 
 ### Screen Readers
-- ARIA labels complete
-- Semantic HTML structure
-- Form labels associated
-- Error messages announced
+- **ARIA labels**: All interactive elements
+- **Live regions**: Status updates
+- **Semantic HTML**: Proper heading hierarchy
+- **Alt text**: All images and icons
 
-### Visual
-- Color contrast 4.5:1 minimum
-- Text resizable to 200%
-- No color-only information
-- Focus indicators high contrast
+## Mobile-First Optimizations
 
-## Performance Optimization
+### Performance
+- **Lazy loading**: Images and heavy components
+- **Code splitting**: Route-based chunks
+- **PWA**: Offline capability, app install
+- **Caching**: Service worker strategies
 
-### Loading States
-- Skeleton screens for content
-- Progressive image loading
-- Lazy load marketplace items
-- Virtual scrolling for long lists
+### Touch Targets
+- **Minimum size**: 44x44px
+- **Spacing**: 8px between targets
+- **Thumb zones**: Primary actions in reach
 
-### Caching
-- Template drafts auto-saved
-- Recent templates cached
-- Variable values remembered
-- Offline mode for viewing
+### Responsive Components
+- **Navigation**: Bottom nav (mobile), sidebar (desktop)
+- **Tables**: Horizontal scroll with sticky columns
+- **Modals**: Full screen (mobile), centered (desktop)
+- **Forms**: Single column (mobile), multi-column (desktop)
 
-### Bundle Optimization
-- Code splitting by route
-- Lazy load heavy components
-- Tree shake unused code
-- CDN for static assets
+## Advanced Features UI
 
-## Error Handling
+### Variable Types Interface
+```
+Variable Configuration
+├── Type: [Dropdown ▼]
+├── Options (for dropdown)
+│   ├── Option 1
+│   ├── Option 2
+│   └── [+ Add Option]
+├── Validation Rules
+│   ├── Required ☑
+│   ├── Min/Max (numbers)
+│   └── Pattern (regex)
+└── Default Value: [____]
+```
 
-### User-Friendly Messages
-- "Network issue - Retrying..."
-- "Template saved locally"
-- "Conflict detected - Review changes"
-- "Generation complete - Download ready"
+### Collaboration Presence
+```
+[Avatar1] [Avatar2] [+3]
+John is editing paragraph 2...
+Sarah is viewing...
+```
 
-### Recovery Options
-- Auto-retry failed requests
-- Local draft recovery
-- Conflict resolution UI
-- Download retry mechanism
+### Conflict Resolution Modal
+```
+┌─────────────────────────┐
+│ Resolve Conflict        │
+├─────────────────────────┤
+│ Your Version | Their    │
+│              | Version  │
+│ [Content A]  | [Content B]│
+├─────────────────────────┤
+│ [Use Mine] [Use Theirs] │
+│     [Merge Both]        │
+└─────────────────────────┘
+```
 
-## Security UI
+## Design Tokens
 
-### Authentication
-- MFA setup flow
-- Password strength indicator
-- Session timeout warnings
-- Device management
+```css
+--primary: #1976D2;
+--primary-light: #42A5F5;
+--primary-dark: #1565C0;
+--secondary: #26A69A;
+--error: #F44336;
+--warning: #FF9800;
+--success: #4CAF50;
+--surface: #FFFFFF;
+--background: #FAFAFA;
+--text-primary: rgba(0,0,0,0.87);
+--text-secondary: rgba(0,0,0,0.54);
+--text-disabled: rgba(0,0,0,0.38);
+--border: rgba(0,0,0,0.12);
+--shadow-1: 0 1px 3px rgba(0,0,0,0.12);
+--shadow-2: 0 2px 6px rgba(0,0,0,0.16);
+--radius-small: 4px;
+--radius-medium: 8px;
+--radius-large: 16px;
+--spacing-xs: 4px;
+--spacing-sm: 8px;
+--spacing-md: 16px;
+--spacing-lg: 24px;
+--spacing-xl: 32px;
+```
 
-### Permissions
-- Share dialog with role selection
-- Permission matrix visible
-- Access logs available
-- Revoke access option
+## Implementation Notes
 
-## Notification System
-- Real-time collaboration alerts
-- Generation completion notices
-- Comment mentions
-- Version control updates
-- System maintenance warnings
+### Component Framework
+- React 18 with TypeScript
+- Material-UI v5 components
+- Lexical for rich text editing
+- Framer Motion for animations
+
+### State Management
+- Redux Toolkit for global state
+- React Query for server state
+- Yjs for collaborative editing
+- Local storage for preferences
+
+### Performance Targets
+- FCP: < 1.5s
+- TTI: < 3s
+- CLS: < 0.1
+- Bundle: < 100KB (gzipped)
+
+### Browser Support
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+- Mobile browsers (iOS 14+, Android 10+)
