@@ -9,26 +9,33 @@ jest.mock('../lib/supabase', () => ({
   supabase: {
     from: jest.fn((table: string) => {
       // Return appropriate mock based on table name
+      if (table === 'advanced_variables') {
+        return {
+          select: jest.fn(() => ({
+            eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
+          })),
+          insert: jest.fn(() => ({
+            select: jest.fn(() => ({
+              single: jest.fn(() => Promise.resolve({ 
+                data: {
+                  id: '123',
+                  type: 'computed',
+                  computation_formula: '{{base}} * {{rate}}', // Match what the test sets
+                  template_id: 'template-123',
+                  variable_id: '2' // Changed from base_variable_id to variable_id
+                }, 
+                error: null 
+              }))
+            }))
+          })),
+          delete: jest.fn(() => ({
+            eq: jest.fn(() => Promise.resolve({ data: null, error: null }))
+          }))
+        };
+      }
       return {
         select: jest.fn(() => ({
           eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
-        })),
-        insert: jest.fn(() => ({
-          select: jest.fn(() => ({
-            single: jest.fn(() => Promise.resolve({ 
-              data: {
-                id: '123',
-                type: 'computed',
-                computation_formula: 'test formula',
-                template_id: 'template-123',
-                base_variable_id: '2'
-              }, 
-              error: null 
-            }))
-          }))
-        })),
-        delete: jest.fn(() => ({
-          eq: jest.fn(() => Promise.resolve({ data: null, error: null }))
         }))
       };
     })
@@ -174,9 +181,9 @@ describe('AdvancedVariables', () => {
         {
           id: '123',
           type: 'computed',
-          computation_formula: 'test formula',
+          computation_formula: '{{base}} * {{rate}}',
           template_id: 'template-123',
-          base_variable_id: '2'
+          variable_id: '2'
         }
       ]);
     }, { timeout: 3000 });
