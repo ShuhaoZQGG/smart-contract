@@ -165,7 +165,7 @@ describe('AdvancedVariables', () => {
     const selectContainer = screen.getByText('Select Variable').parentElement;
     const select = selectContainer?.querySelector('select');
     if (select) {
-      fireEvent.change(select, { target: { value: 'amount' } });
+      fireEvent.change(select, { target: { value: '2' } }); // Use the variable ID
     }
     
     // Now the formula textarea should appear

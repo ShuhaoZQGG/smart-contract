@@ -1,4 +1,4 @@
-# Smart Contract Document Template System - UI/UX Design Specifications
+# Smart Contract - UI/UX Design Specifications
 
 ## Design System Foundation
 

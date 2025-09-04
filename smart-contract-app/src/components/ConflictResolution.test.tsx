@@ -22,8 +22,8 @@ const defaultMockData = [
   }
 ];
 
-// Mock Supabase
-const mockSupabaseClient = (() => {
+// Mock Supabase - moved inside jest.mock to fix initialization issue
+jest.mock('../lib/supabase', () => {
   const mockData = [
     {
       id: '1',
@@ -59,7 +59,7 @@ const mockSupabaseClient = (() => {
     return chain;
   };
   
-  return {
+  const mockSupabaseClient = {
     from: jest.fn((table: string) => {
       if (table === 'collaboration_conflicts') {
         return createQueryChain(mockData);
@@ -73,11 +73,11 @@ const mockSupabaseClient = (() => {
     })),
     removeChannel: jest.fn()
   };
-})();
-
-jest.mock('../lib/supabase', () => ({
-  supabase: mockSupabaseClient
-}));
+  
+  return {
+    supabase: mockSupabaseClient
+  };
+});
 
 // Mock useAuth
 jest.mock('../contexts/AuthContext', () => ({
@@ -95,11 +95,62 @@ describe('ConflictResolution', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Get the mocked supabase and configure it
+    const { supabase } = require('../lib/supabase');
+    
+    const mockData = [
+      {
+        id: '1',
+        template_id: 'template-123',
+        user_id: 'user-456',
+        conflict_type: 'edit',
+        original_content: { text: 'Original content' },
+        conflicting_content: { text: 'Conflicting content' },
+        resolved: false,
+        created_at: new Date().toISOString(),
+        user: {
+          email: 'other@user.com',
+          full_name: 'Other User'
+        }
+      }
+    ];
+    
+    // Setup the from method to return the proper chain
+    supabase.from.mockImplementation((table: string) => {
+      if (table === 'collaboration_conflicts') {
+        return {
+          select: jest.fn(() => ({
+            eq: jest.fn(() => ({
+              eq: jest.fn(() => ({
+                order: jest.fn(() => Promise.resolve({ data: mockData, error: null }))
+              }))
+            }))
+          })),
+          update: jest.fn(() => ({
+            eq: jest.fn(() => Promise.resolve({ data: mockData, error: null }))
+          }))
+        };
+      }
+      return {
+        select: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
+        }))
+      };
+    });
+    
+    // Setup channel mock
+    supabase.channel.mockReturnValue({
+      on: jest.fn().mockReturnThis(),
+      subscribe: jest.fn().mockReturnThis(),
+      unsubscribe: jest.fn()
+    });
   });
 
   it('renders no conflicts state when empty', async () => {
     // Override mock for this test
-    mockSupabaseClient.from.mockImplementationOnce((table: string) => {
+    const { supabase } = require('../lib/supabase');
+    supabase.from.mockImplementationOnce((table: string) => {
       return {
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
